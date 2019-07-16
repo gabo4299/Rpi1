@@ -1,0 +1,75 @@
+body {
+  margin: 0px;
+  padding: 0px;
+
+  background: #3e97c1;
+  color: #fff;
+}
+
+div#caja{
+    
+    margin:auto;
+    margin-top:60px;
+    width: 300px;
+    height: 350px;
+    align-items: center;
+    justify-content: center;
+    
+}
+div#Cajamotor{
+    
+  margin:auto;
+  margin-top:60px;
+  width: 300px;
+  height: 350px;
+  align-items: center;
+  justify-content: center;
+  background: black
+}
+.centroApagado {
+
+  background: url("Imagenes/luzApagada1.png") no-repeat ;
+    
+    align-items: center;
+    justify-content: center;
+ /* background: black;*/
+  width: 300px;
+  height: 400px;
+  /*-webkit-background-size: cover;
+  background-position: center center;
+  align-items: center;
+  justify-content: center;
+  background-size: cover ;
+  */
+}
+
+.centroEncendido {
+    background: url("Imagenes/luzEncendida1.png") no-repeat ;
+    
+    align-items: center;
+    justify-content: center;
+ /* background: black;*/
+  width: 300px;
+  height: 400px;
+}
+div#bot{
+    
+    margin:auto;
+    margin-top:60px;
+    width: 200px;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+        
+}
+
+div#botonesCortina{
+    
+  margin:auto;
+  margin-top:60px;
+  width: 200px;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+      
+}

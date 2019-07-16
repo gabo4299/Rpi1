@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Luz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+</head>
+<body>
+    <H1 align="center"> Encender/Apagar Foco </H1>
+<div id="caja">
+        
+    {% if est=='Apagado' %}
+    <div class="centroApagado"> </div>
+    {% for  est in 'Apagado'  %}
+       {{A('Apagado')}}
+       
+       
+    {% endfor %}    
+    {% else %}
+        {% if est=='Encendido' %}
+        <div class="centroEncendido"> </div>
+        {% for est in 'Encendido' %}
+        
+          {{A('Encendido')}}
+    
+         
+            
+        {% endfor %}   
+        {% else %}
+        <div class="centroApagado"> </div>
+        {% endif %}
+        
+    {% endif %}
+    
+</div>
+
+<div id="bot">
+    <a href="/Encendido">
+        <input type="button" value="Encendido" name="Encendido" align="center">
+        
+    </a>
+<a href="/Apagado">
+        <input type="button" value="Apagado" name="apagado" align="center">
+        
+    </a>
+</div>
+
+<div id="Cajamotor">
+
+    <h1 align="center">Cortina</h1>
+</div>
+
+<div id="botonesCortina">
+    <a href="/Abierto">
+        <input type="button" value="Abierto" name="Abierto" align="center">
+        
+    </a>
+<a href="/Cerrado">
+        <input type="button" value="Cerrado" name="Cerrado" align="center">
+        
+    </a>
+</div>
+
+
+
+</body>
+</html>
