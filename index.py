@@ -36,7 +36,7 @@ def home1(estado_luz2):
       if (estado_luz2==("Encendido")):
         
          aux("Encendido")     
-   return render_template('home.html',est=estado   _luz2,A=encender,estad=estadomotor)
+   return render_template('home.html',est=estado_luz2,A=encender,estad=estadomotor)
 
 @app.route('/motor/<string:motr>')
 def mot(motr):
