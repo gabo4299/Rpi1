@@ -16,7 +16,7 @@ div#caja{
     justify-content: center;
     
 }
-div#Cajamotor{
+.CajamotorApagado{
     
   margin:auto;
   margin-top:60px;
@@ -25,6 +25,16 @@ div#Cajamotor{
   align-items: center;
   justify-content: center;
   background: black
+}
+.CajamotorEncendido{
+    
+  margin:auto;
+  margin-top:60px;
+  width: 300px;
+  height: 350px;
+  align-items: center;
+  justify-content: center;
+  background: greenyellow;
 }
 .centroApagado {
 

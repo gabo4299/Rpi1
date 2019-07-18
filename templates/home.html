@@ -7,27 +7,29 @@
     <title>Luz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
+
+
 <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+
     <H1 align="center"> Encender/Apagar Foco </H1>
 <div id="caja">
         
     {% if est=='Apagado' %}
     <div class="centroApagado"> </div>
-    {% for  est in 'Apagado'  %}
-       {{A('Apagado')}}
+    {{A('Apagado')}}
        
        
-    {% endfor %}    
+    
     {% else %}
         {% if est=='Encendido' %}
         <div class="centroEncendido"> </div>
-        {% for est in 'Encendido' %}
+    
         
           {{A('Encendido')}}
     
          
             
-        {% endfor %}   
         {% else %}
         <div class="centroApagado"> </div>
         {% endif %}
@@ -37,29 +39,46 @@
 </div>
 
 <div id="bot">
-    <a href="/Encendido">
+    <a href="/luz/Encendido">
         <input type="button" value="Encendido" name="Encendido" align="center">
         
     </a>
-<a href="/Apagado">
+<a href="/luz/Apagado">
         <input type="button" value="Apagado" name="apagado" align="center">
         
     </a>
 </div>
-
-<div id="Cajamotor">
+{% if estad=='NO' %}
+<div class="CajamotorApagado">
 
     <h1 align="center">Cortina</h1>
 </div>
+{% endif %}  
+{% if estad=='SI' %}
+<div class="CajamotorEncendido">
+
+    <h1 align="center">Cortina</h1>
+</div>
+{% endif %}  
 
 <div id="botonesCortina">
-    <a href="/Abierto">
+    <a href="/motor/Abierto">
         <input type="button" value="Abierto" name="Abierto" align="center">
-        
+        {% if estad=='NO' %}
+        <script>
+            const socket = io();
+            socket.emit('hacer', 'Subir')
+        </script>
+        {% endif %}      
     </a>
-<a href="/Cerrado">
+    <a href="/motor/Cerrado">
         <input type="button" value="Cerrado" name="Cerrado" align="center">
-        
+        {% if estad=='SI' %}
+        <script>
+            const socket = io();
+            socket.emit('hacer', 'NO')
+        </script>
+        {% endif %} 
     </a>
 </div>
 
