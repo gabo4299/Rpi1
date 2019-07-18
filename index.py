@@ -22,6 +22,7 @@ m.close()
 
 app.config['SECRET_KEY']='secret'
 socketio=SocketIO(app)
+print ("socket abierto", socketio)
 
 @app.route('/')
 def home(): 
