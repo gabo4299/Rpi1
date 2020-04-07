@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Luz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home2.css') }}">
+</head>
+
+<body>
+         <!--   siiiii  jquery-->
+         <script
+         src="https://code.jquery.com/jquery-3.4.1.min.js"
+         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+         crossorigin="anonymous"></script>
+ 
+         <!--   o siiiii  socejts-->
+         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"> </script>
+
+    <H1 align="center"> Encender/Apagar Foco </H1>
+    
+
+    
+
+    
+
+    
+    <div>
+            <button class="btn btn-primary" id="presionar">Presionar</button>
+        </div>
+    <div id="caja">
+        
+
+        <div class="centroApagado">
+
+        </div> 
+        <div class="centroEncendido">
+
+        </div> 
+ 
+    </div>
+    <div class="Emergente">
+            <div class="ContenidoEmergente">
+                <span class="Cerrar">×</span>
+                <h1>Cortina cuarto .. </h1>
+                <button class="button" id="arriba">arriba</button>
+                <button class="button" id="abajo">abajo</button>
+                <button class="button" id="cerrar">cerrar</button>
+                <button class="button" id="abrir">abrir</button>
+            </div>
+ </div>
+    <div id="cajacortina">
+           
+        
+            
+        
+        
+    <h1></h1>
+    </div>
+
+
+<script src="../static/js/home2.js"></script>
+
+</body>
+</html>

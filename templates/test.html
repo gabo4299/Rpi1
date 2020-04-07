@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>socket io    </title>
+</head>
+<body>
+
+        <!--   o siiiii jquery-->
+        <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"> </script>
+    
+    
+    <h1>Culito </h1>
+
+   
+    <button type="button" id="enviar">
+        send
+          
+    </button>
+
+  
+
+    <button type="button" id="parar">
+            parar
+              
+        </button>
+        <ul id="menajeul">
+        
+        </ul>
+    <script>
+         const socket = io();
+            socket.on('mensaje',function (msg) {
+                console.log(msg)
+                if (msg=='empeza') {
+                    $('#menajeul').append('<li>perro</li>');
+                }
+               
+                
+            }) 
+
+         $("#enviar").on('click',function () {
+            
+            socket.emit('mensaje' , 'empeza' , 'puto');
+            
+         })
+
+         $("#parar").on('click',function () {
+            socket.emit('mensaje' , 'para' , 'perra')
+         })
+    </script>
+   
+</body>
+</html>

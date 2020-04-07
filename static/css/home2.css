@@ -1,0 +1,159 @@
+body {
+    margin: 0px;
+    padding: 0px;
+  
+    background: #3e97c1;
+    color: #fff;
+  }
+  
+  div#caja{
+      
+      margin:auto;
+      margin-top:60px;
+      width: 300px;
+      height: 350px;
+      align-items: center;
+      justify-content: center;
+      
+  }
+  .centroApagado {
+  
+    background: url("Imagenes/luzApagada1.png") no-repeat ;
+      
+      align-items: center;
+      justify-content: center;
+   /* background: black;*/
+    width: 300px;
+    height: 400px;
+    cursor: pointer;
+    display: flex;
+    /*-webkit-background-size: cover;
+    background-position: center center;
+    align-items: center;
+    justify-content: center;
+    background-size: cover ;
+    */
+  }
+  
+  .centroEncendido {
+      background: url("Imagenes/luzEncendida1.png") no-repeat ;
+      
+      align-items: center;
+      justify-content: center;
+   /* background: black;*/
+    width: 300px;
+    display: flex;
+    height: 400px;
+    cursor: pointer;
+  }
+  div#cajacortina{
+      
+      margin:auto;
+      margin-top:60px;
+      width: 300px;
+      height: 350px;
+      align-items: center;
+      justify-content: center;
+          
+  }
+  
+
+  .CortinaCerrada{
+      
+    /*margin:auto;
+    margin-top:60px;*/
+    width: 300px;
+    height: 350px;
+    align-items: center;
+    justify-content: center;
+    background: url("Imagenes/Cortina Cerrada2.png") no-repeat ;
+    
+    cursor: pointer;
+    display: flex;
+  
+  }
+  .CortinaSemi{
+      
+    /*margin:auto;
+    margin-top:60px;*/
+    width: 300px;
+    height: 350px;
+    align-items: center;
+    justify-content: center;
+    background: url("Imagenes/cortina semiabierta2.png") no-repeat ;
+    cursor: pointer;
+    display: flex;
+  }
+
+  .CortinaAbierta{
+      
+    /*margin:auto;
+    margin-top:60px;*/
+    background: url("Imagenes/cortina abierta2.png") no-repeat ;
+    background-size: cover;
+    width: 300px;
+    height: 350px;
+    align-items: center;
+    justify-content: center;
+   
+    cursor: pointer;
+    display: flex;
+    
+  }
+
+
+
+  .Emergente {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    display: none;
+    transform: scale(1.1);
+    transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+}
+.ContenidoEmergente {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    color: #3e97c1;
+    padding: 1rem 1.5rem;
+    width: 24rem;
+    border-radius: 0.5rem;
+}
+.Cerrar {
+    float: right;
+    width: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    background-color: lightgray;
+    cursor: pointer;
+}
+.Cerrar:hover {
+    background-color: darkgray;
+}
+.Mostrar {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1.0);
+    transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+.button {
+	background-color:#3e97c1;
+	border: 2px solid white;
+	border-radius: 25px;
+	text-decoration: none;
+	padding: 10px 23px;
+	color: white;
+	margin-top: 10px;
+  display: inline-block;
+  float: left;
+	
+}

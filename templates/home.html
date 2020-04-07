@@ -62,21 +62,24 @@
 {% endif %}  
 
 <div id="botonesCortina">
-    <a href="/motor/Abierto">
+        <a href="/motor/Abierto">
         <input type="button" value="Abierto" name="Abierto" align="center">
         {% if estad=='NO' %}
         <script>
             const socket = io();
             socket.emit('hacer', 'Subir')
         </script>
-        {% endif %}      
+        {% endif %} 
     </a>
     <a href="/motor/Cerrado">
         <input type="button" value="Cerrado" name="Cerrado" align="center">
         {% if estad=='SI' %}
+        {{ac}}
         <script>
-            const socket = io();
-            socket.emit('hacer', 'NO')
+            
+            const sockete = io();
+            sockete.emit('bajar', 'NO')
+
         </script>
         {% endif %} 
     </a>

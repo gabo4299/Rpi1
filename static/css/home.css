@@ -25,6 +25,7 @@ div#caja{
   align-items: center;
   justify-content: center;
   background: black
+
 }
 .CajamotorEncendido{
     
@@ -35,6 +36,7 @@ div#caja{
   align-items: center;
   justify-content: center;
   background: greenyellow;
+  
 }
 .centroApagado {
 
@@ -45,6 +47,7 @@ div#caja{
  /* background: black;*/
   width: 300px;
   height: 400px;
+  cursor: pointer;
   /*-webkit-background-size: cover;
   background-position: center center;
   align-items: center;
@@ -60,7 +63,9 @@ div#caja{
     justify-content: center;
  /* background: black;*/
   width: 300px;
+
   height: 400px;
+  cursor: pointer;
 }
 div#bot{
     
