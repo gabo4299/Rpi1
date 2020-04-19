@@ -156,13 +156,15 @@ class Node:
                %(self.IdNode, self.IdCasa, self.PinesLibres, self.PinesOcupados, self.NPL, self.NPO ,self.AnalogLibre,self.AnalogOcupado,self.Analog )
 
 class Control:
-    def __init__(self,Idontrol,IdDisp,Marca,Dispositivo,Pin):
+    def __init__(self,Idontrol,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCasa,Codigos):
         self.Idontrol = Idontrol
         self.IdDisp = IdDisp
         self.Marca = Marca
         self.Dispositivo = Dispositivo
         self.Pin=Pin
-        
+        self.Nombre=Nombre
+        self.IdCasa=IdCasa
+        self.Codigos=Codigos
 
     def toDBCollection (self):
         return {
@@ -170,50 +172,56 @@ class Control:
             "IdDisp":self.IdDisp,
             "Marca":self.Marca,
             "Dispositivo":self.Dispositivo ,
-            "Pin":self.Pin    
+            "Pin":self.Pin ,
+            "Nombre":self.Nombre,
+            "IdCasa":self.IdCasa,
+            "Codigos":self.Codigos
         }
 
     def __str__(self):
-        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i  " \
-               %(self.Idontrol, self.IdDisp, self.Marca, self.Dispositivo, self.Pin  )
+        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i -IdCasa:%i -Codigos:%s  " \
+               %(self.Idontrol, self.IdDisp, self.Marca, self.Dispositivo, self.Pin ,self.IdCasa,self.Codigos )
 
 class LecIR:
-    def __init__(self,IdLec,IdDisp,Dispositivo,Pin):
+    def __init__(self,IdLec,IdDisp,Dispositivo,Pin,LastData):
         self.IdLec = IdLec
         self.IdDisp = IdDisp
         self.Dispositivo = Dispositivo
-        self.Pin=Pin        
+        self.Pin=Pin
+        self.LastData=LastData
     def toDBCollection (self):
         return {
             "IdLec":self.IdLec,
             "IdDisp":self.IdDisp,
             "Dispositivo":self.Dispositivo ,
-            "Pin":self.Pin    
+            "Pin":self.Pin,
+            "LastData":self.LastData
+            #INCOMING DATA
         }
 
     def __str__(self):
-        return "IdLec : %i -IdDisp : %i  - Dispositivo: %s  - Pin: %i  " \
-               %(self.IdLec, self.IdDisp, self.Dispositivo, self.Pin  )
+        return "IdLec : %i -IdDisp : %i  - Dispositivo: %s  - Pin: %i - LastData: %s " \
+               %(self.IdLec, self.IdDisp, self.Dispositivo, self.Pin ,self.LastData )
 
     
-class CodigosIR:
-     def __init__(self,IdCodigo,Nombre,codigo,Funcion):
-        self.IdCodigo = IdCodigo
-        self.Nombre = Nombre
-        self.codigo = codigo
-        self.Funcion=Funcion   
+# class CodigosIR:
+#      def __init__(self,IdCodigo,Nombre,codigo,Funcion):
+#         self.IdCodigo = IdCodigo
+#         self.Nombre = Nombre
+#         self.codigo = codigo
+#         self.Funcion=Funcion   
 
-     def toDBCollection (self):
-        return {
-            "IdCodigo":self.IdCodigo,
-            "Nombre":self.Nombre,
-            "codigo":self.codigo ,
-            "Funcion":self.Funcion    
-        }
+#      def toDBCollection (self):
+#         return {
+#             "IdCodigo":self.IdCodigo,
+#             "Nombre":self.Nombre,
+#             "codigo":self.codigo ,
+#             "Funcion":self.Funcion    
+#         }
 
-     def __str__(self):
-        return "IdCodigo : %i -Nombre : %s  - codigo: %s  - Funcion: %s  " \
-               %(self.IdCodigo, self.Nombre, self.codigo, self.Funcion  )
+#      def __str__(self):
+#         return "IdCodigo : %i -Nombre : %s  - codigo: %s  - Funcion: %s  " \
+#                %(self.IdCodigo, self.Nombre, self.codigo, self.Funcion  )
 
 
 class Casa:

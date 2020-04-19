@@ -1,5 +1,5 @@
 import pymongo
-from Base import Cuarto ,Interruptor,Cortina,Casa,CodigosIR,Control,Node,Raspberry,LecIR
+from Base import Cuarto ,Interruptor,Cortina,Casa,Control,Node,Raspberry,LecIR
 from itertools import chain
 from collections import defaultdict
 import json
@@ -14,99 +14,13 @@ NombreBase="pruebaAcuarto2"
 
 #coleccion.insert_one(x.toDBCollection())
 
-class Pines:
-    def __init__ (self):
-        print()
-
-    
-    def BuscarPinInt(self,x):
-         db = cliente[NombreBase]
-         coleccion=db[self.CollectionName]
-         variablepregunta={ "Pin": x}
-         Encontro=0
-         x=int(x)
-         #print ("BUSCANDO PIN ",x)
-         for var in coleccion.find({ "Pin": x },{"_id":0 , "Pin": 1 }):
-             #print(var , " Es igual a ", variablepregunta)
-             Encontro=Encontro+1
-             break
-        
-         if Encontro>0:
-            return True
-         else:
-            return False
-
-    def BuscarPinMoto(self,x):
-         db = cliente[NombreBase]
-         coleccion=db[self.CollectionName]
-         #variablepregunta={ "Pinmotor": x}
-         Encontro=0
-         x=int(x)
-         
-         if x<16 and x>=0:
-             
-            #print ("BUSCANDO PIN ",x)
-             for var in coleccion.find({ "Pinmotor": x },{"_id":0 , "Pinmotor": 1 }):
-                #print(var , " Es igual a ", variablepregunta)
-                Encontro=Encontro+1
-                break
-            
-             if Encontro>0:
-                return True
-             else:
-                return False
-
-
-    def BuscarPinSensor1(self,x):
-         db = cliente[NombreBase]
-         coleccion=db[self.CollectionName]
-         #variablepregunta={ "Pinmotor": x}
-         Encontro=0
-         x=int(x)
-         if x>=0:
-            #print ("BUSCANDO PIN ",x)
-            for var in coleccion.find({ "PinSensor1": x },{"_id":0 , "PinSensor1": 1 }):
-                #print(var , " Es igual a ", variablepregunta)
-                Encontro=Encontro+1
-                return True
-                break
-           
-            if Encontro>0:
-                return True
-            else:
-                return False
-         else :
-             return ("error numero invalido")
-    
-    def BuscarPinSensor2(self,x):
-         db = cliente[NombreBase]
-         coleccion=db[self.CollectionName]
-         #variablepregunta={ "Pinmotor": x}
-         Encontro=0
-         x=int(x)
-         
-         if x>=0:
-            #print ("BUSCANDO PIN ",x)
-            for var in coleccion.find({ "PinSensor2": x },{"_id":0 , "PinSensor2": 1 }):
-                #print(var , " Es igual a ", variablepregunta)
-                Encontro=Encontro+1
-                
-                return True
-                
-                break
-           
-            if Encontro>0:
-                return True
-            else:
-                return False
-         else :
-             return ("error numero invalido")
-
 
 class OpRasp:
     def __init__ (self):
         self.CollectionName="Rasp"
-        print(" ")
+        self.complete="Complete"
+        self.ErrorNoId="No existe Raspberry con este  ID "
+        self.ErrorIdRepetido="Ya existe  Rasp con este ID"
     def buscarRasp(self,id):
         """ Devuelve True si la Raspberry existe"""
         db = cliente[NombreBase]
@@ -124,20 +38,16 @@ class OpRasp:
             return True
         if encontro==0:
             return False
-    
 
     def MostrarRaspEsp(self,id):
      """ Devuelve una sola Raspberry del Id especificado"""
      db = cliente[NombreBase]
      coleccion=db[self.CollectionName]
-     print(id)
+     
      for var in coleccion.find({"IdRasp": id },{"_id":0}):
-        #print (var)  
+          
         
-        return var  
-
-        
-        break
+        return var         
     def InsertarRasp(self,IdRasp,IdCasa,CantidadPWM,CantidadLuz,IoT):
         """ Crea Una Nueva RaspBerry , los parametros:
 
@@ -163,10 +73,8 @@ class OpRasp:
 
 
         if  OpRasp().buscarRasp(IdRasp)==True: 
-            print ("Ya existe  Rasp con este id ")
-            return ("Ya existe  Rasp con este id ")
-            for var in coleccion.find({ "IdRasp":IdRasp },{"_id":0}):
-                    print (var)
+            print (self.ErrorIdRepetido)
+            return (self.ErrorIdRepetido)
         else:
             
             PinesOcupados={}
@@ -174,11 +82,9 @@ class OpRasp:
             #FONDO=input ("Ingrese Fondo: ")
             #CONTRASENHA=input ("Ingrese contrasenhaa: ") '''
             if IoT == 0:
-                print ("correcto")
-
                 cua=Raspberry(IdRasp,IdCasa,allpins,PinesOcupados,len(allpins),0,0,"",0,"",0,"")
                 OpCasa().agregarRasp(IdCasa)
-                return ("Completado")
+                return (self.complete)
                 
             else:
                 lent=len(IoT)
@@ -238,16 +144,13 @@ class OpRasp:
                 IoT.sort()
                 for y in IoT:
                     PinesOcupados.update({y:"IoT"})
-                print ("correcto")
+                
                 
                 cua=Raspberry(IdRasp,IdCasa,pinsl,IoT,len(pinsl),len(IoT),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz)
                 
             coleccion.insert_one(cua.toDBCollection())
             OpCasa().agregarRasp(IdCasa)
-            return ("Creado Satisfactoriamente")     
-
-            
-            
+            return ("Creado Satisfactoriamente")            
     def ModRasp(self,id,paramet,valor):
         """ Modificas las Raspberry con el id , el paramero , y el nuevo valor """
         db = cliente[NombreBase]
@@ -270,16 +173,15 @@ class OpRasp:
                     
                     
                 else:
-                    # print ("Debugeando : parametro: ",paramet," Valor: ",valor)
+                    
                     if paramet=="PinesOcupados":
-                        # print ("entrooooo")
                         coleccion.update({ "IdRasp": id}, {"$set":{ str(paramet): valor}},multi=True)
                     else:
                         coleccion.update_one({ "IdRasp": id}, {"$set":{ str(paramet): valor}})
                     
 
-                #if vaca is not None:
-                #   print("ok")
+                
+                
 
             else:
                 if condicion==True:
@@ -288,8 +190,7 @@ class OpRasp:
 
 
         else:
-            
-            print("El id de casa no existe")
+            return("El id de casa no existe")
     def ElmiminarRasp(self,ID):
         """ Eliminas la raspberry con el Id """
         db = cliente[NombreBase]
@@ -301,11 +202,11 @@ class OpRasp:
 
             print("Eliminando")        
             coleccion.delete_one({ "IdRasp": ID })
-                
+            return("Eliminado")  
             
         
         else:
-            print("No se encontro id")
+            return("No se encontro id")
     def ComprobarIoT(self,id):
         """ Devuelve True en caso de que se registro IoT en la Raspberry """
         id = int ( id )
@@ -509,7 +410,7 @@ class OpRasp:
             return ("No existe id de Raspberry")
     
     def BorrarPinOcupadoRasp(self,id,pin):
-        ''' elimina el par clave valor , con la clave == pin '''
+        ''' elimina el par clave valor de la lista de ocupados, con la clave == pin '''
         id = int ( id)
         pin = int (pin)
         if OpRasp().buscarRasp(id):
@@ -575,7 +476,6 @@ class OpRasp:
 class OpNode:
     def __init__ (self):
         self.CollectionName="Node"
-        print(" ")
     def buscarNode(self,id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -597,9 +497,9 @@ class OpNode:
     def MostrarNodeEsp(self,id):
      db = cliente[NombreBase]
      coleccion=db[self.CollectionName]
-     print(id)
+     
      for var in coleccion.find({"IdNode": id },{"_id":0}):
-        #print (var)  
+          
         
         return var  
 
@@ -614,10 +514,8 @@ class OpNode:
         if  OpNode().buscarNode(IdNode)==True: 
             print ("Ya existe  Node con este id ")
             return ("Ya existe  Node con este id ")
-            for var in coleccion.find({ "IdNode":IdNode },{"_id":0}):
-                    print (var)
         else:
-            print ("correcto")
+            
             
             cua=Node(IdNode,IdCasa,["D0","D1","D2","D3","D4","D5","D6","D7","D8"],{},pinLibres,0,"A0","",1)
             
@@ -645,9 +543,9 @@ class OpNode:
                     
                             
                 else:
-                    # print ("Debugeando : parametro: ",paramet," Valor: ",valor)
+                    
                     if paramet=="PinesOcupados":
-                        # print ("entrooooo")
+                        
                         coleccion.update({ "IdNode": id}, {"$set":{ str(paramet): valor}},multi=True)
                     else:
                         coleccion.update_one({ "IdNode": id}, {"$set":{ str(paramet): valor}})
@@ -793,7 +691,6 @@ class OpNode:
 class OpCasa:
     def __init__ (self):
         self.CollectionName="Casa"
-        print(" ")
     def buscaridcasa(self,Id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -841,9 +738,9 @@ class OpCasa:
      id=int(id)
      db = cliente[NombreBase]
      coleccion=db[self.CollectionName]
-     print(id)
+     
      for var in coleccion.find({"IdCasa": id },{"_id":0}):
-        #print (var)  
+          
         
         return var  
 
@@ -857,10 +754,8 @@ class OpCasa:
         if  OpCasa().buscaridcasa(IdCasa)==True: 
             print ("Ya existe  casa con este id ")
             return ("Ya existe  casa con este id ")
-            for var in coleccion.find({ "IdCasa":IdCasa },{"_id":0}):
-                    print (var)
         else:
-            print ("correcto")
+            
             #NOMBRE=input('Ingrese Nombre: ')
             #FONDO=input ("Ingrese Fondo: ")
             #CONTRASENHA=input ("Ingrese contrasenhaa: ") '''
@@ -941,7 +836,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "NDispositivos": 1 } })
 
 
@@ -953,7 +848,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "NDispositivos": -1 } })
     def agregarNode(self,id):
         db = cliente[NombreBase]
@@ -963,7 +858,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Node":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "Node": 1 } })
 
 
@@ -975,7 +870,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Node":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "Node": -1 } })
     def agregarRasp(self,id):
         db = cliente[NombreBase]
@@ -985,7 +880,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Rasp":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "Rasp": 1 } })
 
 
@@ -997,7 +892,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Rasp":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "Rasp": -1 } })
     def AddCuarto(self,id):
         db = cliente[NombreBase]
@@ -1007,7 +902,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "CantidadCuartos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "CantidadCuartos": 1 } })
 
         
@@ -1019,7 +914,7 @@ class OpCasa:
         if OpCasa().buscaridcasa(id)==True:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "CantidadCuartos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "IdCasa": id}, { "$inc": { "CantidadCuartos": -1 } })
 
 
@@ -1027,7 +922,7 @@ class OpCasa:
 
 class OpCuarto:
     def __init__ (self):
-        print(" ")
+        
         self.CollectionName="Cuartos"
     
     def buscaridcuarto(self,x):
@@ -1077,9 +972,9 @@ class OpCuarto:
      id=int(id)
      db = cliente[NombreBase]
      coleccion=db[self.CollectionName]
-     print(id)
+     
      for var in coleccion.find({"idcuarto": id },{"_id":0}):
-        #print (var)  
+          
         
         return var  
 
@@ -1096,10 +991,8 @@ class OpCuarto:
         if  OpCuarto().buscaridcuarto(ID)==True:
             print ("Ya existe  cuarto con este id ")
             return ("Ya existe  cuarto con este id ")
-            for var in coleccion.find({ "idcuarto":ID },{"_id":0}):
-                    print (var)
         else:
-            print ("correcto")
+            
             #NOMBRE=input('Ingrese Nombre: ')
             #FONDO=input ("Ingrese Fondo: ")
             #CONTRASENHA=input ("Ingrese contrasenhaa: ") '''
@@ -1174,7 +1067,7 @@ class OpCuarto:
 
         else:
             
-            print("El id de cuarto no existe")  
+            return("El id de cuarto no existe")  
 
     
     
@@ -1188,7 +1081,7 @@ class OpCuarto:
         if OpCuarto().buscaridcuarto(id)==True:
             for va in coleccion.find({ "idcuarto" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "idcuarto": id}, { "$inc": { "NDispositivos": 1 } })
             OpCasa().agregarDisp(OpCuarto().MostrarCuartoEsp(id)["idcasa"])
             
@@ -1202,7 +1095,7 @@ class OpCuarto:
         if OpCuarto().buscaridcuarto(id)==True:
             for va in coleccion.find({ "idcuarto" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
-            print(numero)
+            
             coleccion.update_one({ "idcuarto": id}, { "$inc": { "NDispositivos": -1 } })
             OpCasa().RestDisp(OpCuarto().MostrarCuartoEsp(id)["idcasa"])
             
@@ -1310,6 +1203,7 @@ class OpInterruptor:
             #        print (var)
             else:
                 print("no existe dispositivo")
+                return("no existe dispositivo")
         else:
             print ("No existe  cuarto con este id ")
             return ("No existe  cuarto con este id ")
@@ -1353,7 +1247,7 @@ class OpInterruptor:
             coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ 'Estado': estado}})
             OpInterruptor().MostrarInterruptores()
         else:
-            print("No existe Interruptor")
+            return ("No existe Interruptor")
 
     def modInterruptor(self,idInt,Parametro,valor):
         
@@ -1364,23 +1258,57 @@ class OpInterruptor:
         if OpInterruptor().buscarIdInterruptor(idInt)!=0:
             for vaca in coleccion.find({ str(Parametro): {"$exists": "true" }  }):
                     condicion=False
-                    if Parametro=="IdInterruptor" or Parametro=="IdCuarto" or Parametro=="Pin" or Parametro=="IdDispositivo":
+                    if Parametro == "Dispositivo" or Parametro == "IdDisp" or Parametro=="IdCuarto":
+                        return ("Error No se pueden Cambiar estos parametros , Necesita Eliminar el Dispositivo")
+                    if Parametro=="IdInterruptor"  or Parametro=="Pin" :
                         valor=int(valor)
-                        
-                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                        if Parametro=="Pin":
+                                i=OpInterruptor().buscarIdInterruptor(idInt)
+                                if i["Dispositivo"] == "Rasp":
+                                    if OpRasp().PinLibre(i["IdDisp"],valor) == True:
+                                        OpRasp().BorrarPinOcupadoRasp(i["IdDisp"],i["Pin"])
+                                        OpRasp().AddPinOcupadoRasp(i["IdDisp"],valor,"OUT")
+                                        
+                                        return ("Complete")
+                                    else:
+                                        return("Error Pin Usado")
 
-                        break
-                        
-                    else:
-                        
+                                if i["Dispositivo"] == "IoT":
+                                    if OpRasp().PinLibreIoT(i["IdDisp"],valor,"l") == True:
+                                        OpRasp().BorrarPinIot(i["IdDisp"],i["Pin"],"l")
+                                        OpRasp().AddPinOcupadoIoT(i["IdDisp"],valor,"l")
+                                        
+                                        return ("Complete")
+                                    else:
+                                        return("Error Pin Usado")
+                                if i["Disposotivo"] == "Node":
+                                    if OpNode().PinLibre(i["IdDisp"],valor) == True:
+                                        OpNode().BorrarPinOcupadoNode(i["IdDisp"],i["Pin"],0)
+                                        OpNode().AddPinOcupadoNode(i["IdDisp"],valor,"OUT")
+                                        
+                                        return ("Complete")
+                                    else:
+                                        return("Error Pin Usado")
+                                
+
+                                return("complete")
                         coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
-                        break
+                        return ("Complete")
+
+                    else:
+                            coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                            return("complete")
+
+                            break
+                        
             else:
                 if condicion==True:
                     print("no existe parametro")
+                    return("no existe parametro")
             
         else:
             print("No existe interruptor")
+            return("No existe interruptor")
 
 
 '''jsonData = '{"name": "Frank", "age": 39}'
@@ -1479,9 +1407,8 @@ class OpCortina:
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR1,"IN")
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR2,"IN")
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINMOTOR,"PWM")
-                                
-                                print ("agregado")
-                                return ("agregado")
+                                print ("Agregado Safisfactoriamente")
+                                return ("Agregado Safisfactoriamente")
                             #else:
                                 #return("pines iguales")
 
@@ -1556,14 +1483,81 @@ class OpCortina:
         if OpCortina().buscarIdCortina(idcor)!=0:
             for vaca in coleccion.find({ str(Parametro): {"$exists": "true" }  }):
                     condicion=False
-                    if Parametro=="IdCortina" or Parametro=="IdCuarto" or Parametro=="Pinmotor" or Parametro=="PinSensor1" or Parametro=="PinSensor2" or Parametro=="IdDispositivo":
+                    cort=OpCortina().buscarIdCortina(idcor)
+                    if Parametro == "IdDisp" or Parametro == "Dispositivo" or Parametro=="IdCuarto":
+                        return ("Error no se puede cambiar parametro, es necesario Eliminar El Dispositivo")
+                    if Parametro=="IdCortina" or Parametro=="Pinmotor" or Parametro=="PinSensor1" or Parametro=="PinSensor2" or Parametro=="IdDispositivo":
                         valor=int(valor)
-                        if( (Parametro== "IdCortina" and OpCortina().buscarIdCortina(valor)==0 )or (Parametro=="IdCuarto" and OpCuarto().buscaridcuarto(valor)==True) or (Parametro=="Pinmotor" and Pines().BuscarPinMoto(valor)==False) or(Parametro=="PinSensor1" and Pines().BuscarPinSensor1(valor)==False  ) or (Parametro=="PinSensor2" and Pines().BuscarPinSensor2(valor)==False)):
+                        if( (Parametro== "IdCortina" and OpCortina().buscarIdCortina(valor)==0 ) or (Parametro=="IdCuarto" and OpCuarto().buscaridcuarto(valor)==True))  :
                             
                             coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
 
+                            return ("Completado")
                             break
-                        else:
+                        if cort["Dispositivo"] == "Rasp":
+                                if (Parametro=="Pinmotor" and OpRasp().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["Pinmotor"])
+                                    OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"PWM")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor1" and OpRasp().PinLibre(cort["IdDisp"],valor)==True ):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
+                                    OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor2" and OpRasp().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor2"])
+                                    OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                else:
+                                    return("Error pin ocupado")
+                        if cort["Dispositivo"] == "IoT":
+                                if (Parametro=="Pinmotor" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"PWM")==True):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["Pinmotor"])
+                                    OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"PWM")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor1" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"S")==True):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
+                                    OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"S")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor2" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"S")==True):
+                                    OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
+                                    OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"S")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                else:
+                                    return("Error pin ocupado")
+                        if cort["Dispositivo"] == "Node":
+                                if (Parametro=="Pinmotor" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["Pinmotor"],0)
+                                    OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"PWM")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor1" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor1"],0)
+                                    OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor2" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor2"],0)
+                                    OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                else:
+                                    return("Error pin ocupado")
+                        else:                                
                             print('error valor' , valor)
                             break
                     else:
@@ -1572,10 +1566,10 @@ class OpCortina:
                         break
             else:
                 if condicion==True:
-                    print("no existe parametro")
+                    return("no existe parametro")
             
         else:
-            print("No existe interruptor")
+            return("No existe interruptor")
 '''OpCuarto().MostrarCuartos()
 OpCortina().EliminarCortina(2)
 input()
@@ -1585,7 +1579,7 @@ input()
 input()
 OpCortina().modcortina(1,'Pinmotor',0)
 OpCortina().MostrarCortinas()'''
-
+# class oOSonos:,class OpRF:,class OpControl:,class OpTemp:,  FALTA TODO ESTO 
 
 
 # OpCasa().insertarCasa(1,"Gabo",124.11)
@@ -1594,8 +1588,12 @@ OpCortina().MostrarCortinas()'''
 # OpInterruptor().insertarInterruptor(1,1,"IoT",1,5,"No","principal")
 
 # OpCortina().insertarCortina(1,1,1,"IoT",4,6,9,"Roller","Derecha")
-OpCortina().EliminarCortina(1)
-OpInterruptor().EliminarInterruptor(1)
+
+# OpCortina().EliminarCortina(1)
+# OpInterruptor().EliminarInterruptor(1)
+print (OpInterruptor().modInterruptor(1,"Pin",0))
+print (OpInterruptor().modidificarEstadoiNT(1,"Encendido"))
+# OpRasp().BorrarPinIot(1,5,"l")
 
 
 
