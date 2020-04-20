@@ -156,14 +156,14 @@ class Node:
                %(self.IdNode, self.IdCasa, self.PinesLibres, self.PinesOcupados, self.NPL, self.NPO ,self.AnalogLibre,self.AnalogOcupado,self.Analog )
 
 class Control:
-    def __init__(self,Idontrol,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCasa,Codigos):
+    def __init__(self,Idontrol,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,Codigos):
         self.Idontrol = Idontrol
         self.IdDisp = IdDisp
         self.Marca = Marca
         self.Dispositivo = Dispositivo
         self.Pin=Pin
         self.Nombre=Nombre
-        self.IdCasa=IdCasa
+        self.IdCuarto=IdCuarto
         self.Codigos=Codigos
 
     def toDBCollection (self):
@@ -174,18 +174,21 @@ class Control:
             "Dispositivo":self.Dispositivo ,
             "Pin":self.Pin ,
             "Nombre":self.Nombre,
-            "IdCasa":self.IdCasa,
+            "IdCuarto":self.IdCuarto,
             "Codigos":self.Codigos
         }
 
     def __str__(self):
-        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i -IdCasa:%i -Codigos:%s  " \
-               %(self.Idontrol, self.IdDisp, self.Marca, self.Dispositivo, self.Pin ,self.IdCasa,self.Codigos )
+        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i -IdCuarto:%i -Codigos:%s  " \
+               %(self.Idontrol, self.IdDisp, self.Marca, self.Dispositivo, self.Pin ,self.IdCuarto,self.Codigos )
 
 class LecIR:
-    def __init__(self,IdLec,IdDisp,Dispositivo,Pin,LastData):
+    def __init__(self,IdLec,IdDisp,IdCasa,Dispositivo,Pin,LastData):
+        '''Cuando Inicias a leer el codigo sera por 3 seg , ASYNCRONO y cambiaras el last data
+         , habra una funcion que sera copiar el lastadata a el nevo codigo con el  nombre que vendra del front end '''
         self.IdLec = IdLec
         self.IdDisp = IdDisp
+        self.IdCasa=IdCasa
         self.Dispositivo = Dispositivo
         self.Pin=Pin
         self.LastData=LastData
@@ -193,6 +196,7 @@ class LecIR:
         return {
             "IdLec":self.IdLec,
             "IdDisp":self.IdDisp,
+            "IdCasa":self.IdCasa,
             "Dispositivo":self.Dispositivo ,
             "Pin":self.Pin,
             "LastData":self.LastData
@@ -200,8 +204,23 @@ class LecIR:
         }
 
     def __str__(self):
-        return "IdLec : %i -IdDisp : %i  - Dispositivo: %s  - Pin: %i - LastData: %s " \
-               %(self.IdLec, self.IdDisp, self.Dispositivo, self.Pin ,self.LastData )
+        return "IdLec : %i -IdDisp : %i -IdCasa%i  - Dispositivo: %s  - Pin: %i - LastData: %s " \
+               %(self.IdLec, self.IdDisp,self.IdCasa, self.Dispositivo, self.Pin ,self.LastData )
+
+class MarcasControles:
+    def __init__(self,Marca,Codigos):
+        self.Marca = Marca
+        self.Codigos=Codigos
+
+    def toDBCollection (self):
+        return {
+            "Marca":self.Marca,
+            "Codigos":self.Codigos
+        }
+
+    def __str__(self):
+        return " Marca: %s -Codigos:%s  " \
+               %( self.Marca, self.Codigos )
 
     
 # class CodigosIR:

@@ -1,5 +1,5 @@
 import pymongo
-from Base import Cuarto ,Interruptor,Cortina,Casa,Control,Node,Raspberry,LecIR
+from Base import Cuarto ,Interruptor,Cortina,Casa,Control,Node,Raspberry,LecIR,MarcasControles
 from itertools import chain
 from collections import defaultdict
 import json
@@ -106,6 +106,8 @@ class OpRasp:
                         pwm.append(x)
                     for x in range (0,CantidadLuz):
                         luz.append(x)
+                    for y in IoT:
+                        PinesOcupados.update({str(y):"IoT_Luz"})
                 if lent == 6:
                     for x in range (0,CantidadPWM):
                         pwm.append(x)
@@ -114,6 +116,11 @@ class OpRasp:
                     cantidadsensores=16
                     for x in range (0,cantidadsensores):
                         sens.append(x)
+                    for y in IoT:
+                        if  len (PinesOcupados) <= 3:
+                            PinesOcupados.update({str(y):"IoT_Luz"})
+                        else :
+                            PinesOcupados.update({str(y):"IoT_Sen"})
                 if lent ==9:
                     for x in range (0,CantidadPWM):
                         pwm.append(x)
@@ -139,14 +146,13 @@ class OpRasp:
                 
                 IoT.append(2)
                 IoT.append(3)
-
-                
+                PinesOcupados.update({"2":"IoT_I2C"})
+                PinesOcupados.update({"3":"IoT_I2C"})
                 IoT.sort()
-                for y in IoT:
-                    PinesOcupados.update({y:"IoT"})
                 
                 
-                cua=Raspberry(IdRasp,IdCasa,pinsl,IoT,len(pinsl),len(IoT),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz)
+                
+                cua=Raspberry(IdRasp,IdCasa,pinsl,PinesOcupados,len(pinsl),len(PinesOcupados),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz)
                 
             coleccion.insert_one(cua.toDBCollection())
             OpCasa().agregarRasp(IdCasa)
@@ -251,7 +257,15 @@ class OpRasp:
         else:
             return ("No existe Rasp con este ID")
     def AddPinOcupadoIoT(self,id,pin,tipo):
-        """ Quita del array de pines libres IoT el pin , para suponer que ese pin esta ocupado"""
+        """ Quita del array de pines libres IoT el pin , para suponer que ese pin esta ocupado
+        
+        Tipos :
+        
+        IN---->entrada
+        OUT---->Salida
+        PWM -----> pulso de saldia PWM
+        IR-----> IR para que las placas reconozcan
+        falta completar"""
         id = int (id )
         pin = int (pin)
         if OpRasp().buscarRasp(id):
@@ -1122,7 +1136,7 @@ class OpInterruptor:
         aux={"Cuartos":" "}
         auxdict= defaultdict(list)
         # con =0
-        for var in (coleccion.find({  },{"_id":0}).sort("idcuarto",pymongo.ASCENDING)):
+        for var in (coleccion.find({  },{"_id":0}).sort("IdInterruptor",pymongo.ASCENDING)):
             # con=con+1
             # a="Luz "+str(con)
             # aux [a] =  var
@@ -1138,7 +1152,7 @@ class OpInterruptor:
             return auxdict
         else:
             return "No Existen Luces"
-            return auxdict
+            
 
     def buscarIdInterruptor(self,x):
             db = cliente[NombreBase]
@@ -1227,6 +1241,7 @@ class OpInterruptor:
                 OpRasp().BorrarPinIot(jsonToPython["IdDisp"],jsonToPython["Pin"],'l')
             if jsonToPython['Dispositivo'] == "Node":
                 OpNode().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pin"],0)            
+            
             coleccion.delete_one( { "IdInterruptor": id })
 
             
@@ -1570,18 +1585,455 @@ class OpCortina:
             
         else:
             return("No existe interruptor")
-'''OpCuarto().MostrarCuartos()
-OpCortina().EliminarCortina(2)
-input()
 
-#OpCortina().insertarCortina(1,2,17,1,2,'roler')
+class OpControl:
+    def __init__ (self):
+        self.CollectionName="Control"
+    def BuscarControl(self,id):
+        db = cliente[NombreBase]
+        encontro=0
+        coleccion=db[self.CollectionName]
+        id=int(id)
+        for vaca in coleccion.find({ "IdControl": id },{ "_id": 0}):
+            encontro=1
+            break
+        if encontro>0:
+            return vaca
+        if encontro==0:
+            return 0
+    def MostrarControles(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Cuartos":" "}
+        auxdict= defaultdict(list)
+        for var in (coleccion.find({  },{"_id":0}).sort("IdControl",pymongo.ASCENDING)):
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+        if auxdict :
+            return auxdict
+        else:
+            return "No Existen Luces"
+    
+    def InsertarControl(self,IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,Guardar):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpControl().BuscarControl(IdControl) == 0 :
+                if OpCuarto().buscaridcuarto(IdCuarto):
+                    if Dispositivo == "Rasp":
+                        if OpRasp().buscarRasp(IdDisp)==True:
+                            if OpRasp().PinLibre(IdDisp,Pin) == True:
+                                if (OpMarcaControl().BuscarMarcaNombre(Marca) ==0 ):
 
-input()
-OpCortina().modcortina(1,'Pinmotor',0)
-OpCortina().MostrarCortinas()'''
+                                    if Guardar and Marca != "":
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        OpMarcaControl().InsertarMarca(Marca,{})
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        return ("Completado")
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        return ("Completado")
+                                else :
+                                    cods=OpMarcaControl().DevolverCodigos(Marca)
+                                    control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods)
+                                    coleccion.insert_one(control.toDBCollection())
+                                    OpCuarto().agregarDisp(IdCuarto)
+                                    return ("Completado")
+                            else :
+                                return ("Pin Ocupado")
+                        else:
+                            return("Error no existe Rasp")
+
+                    if Dispositivo == "Node":
+                        if OpNode().buscarNode(IdDisp) == True:
+                            if OpNode().PinLibre(IdDisp,Pin) == True:
+                                if (OpMarcaControl().BuscarMarcaNombre(Marca) ==0 ):
+
+                                    if Guardar and Marca != "":
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        OpMarcaControl().InsertarMarca(Marca,{})
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        return ("Completado")
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        return ("Completado")
+                                else :
+                                    cods=OpMarcaControl().DevolverCodigos(Marca)
+                                    control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods)
+                                    coleccion.insert_one(control.toDBCollection())
+                                    OpCuarto().agregarDisp(IdCuarto)
+                                    return ("Completado")
+                            else :
+                                return ("Pin Ocupado")
+                        else: 
+                            return ("No existe Node")
+                    if Dispositivo != "Rasp" and Dispositivo != "Node":
+                        return("Error de Dispositivo")
+
+                else:
+                    return("No Existe Cuarto")
+        else:
+            return ("Existe Control con este ID")
+    
+    def AddCodigo (self, IdControl, Codigo , Valor):
+        # si la  marca es dif ded "" entonces lo anahdes a la marca
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            New=M["Codigos"]
+            New.update({str(Codigo):Valor})
+            if M["Marca"] != "":
+                coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":New}},multi=True)
+                OpMarcaControl().AddCodigo(M["Marca"],Codigo,Valor)
+                return ("Codigo Agregado")
+            else:
+                coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":New}},multi=True)
+                return ("Codigo Agregado")
+        else:
+            return ("No existe Control con este ID")
+    def BorrarCodigo (self, IdControl, Codigo ):
+        # si la  marca es dif ded "" entonces lo Borras a la marca
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            New=M["Codigos"]
+            del New[str(Codigo)]
+            if M["Marca"] != "":
+                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":New}})
+                OpMarcaControl().BorrarCodigo(M["Marca"],Codigo)
+                return ("Codigo Borrado")
+            else:
+                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":New}})
+                return ("Codigo Borrado")
+        else:
+            return ("No existe Control con este ID")
+    def UpdateCodigos(self , IdControl,Codigo):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            if M["Marca"] != "":
+                coleccion.update({"IdControl":IdControl},{"$Set":{"Codigos":Codigo}})
+                OpMarcaControl().ActualizarCodigos(M["Marca"],Codigo)
+                return ("Codigos Agregado")
+            else:
+                coleccion.update({"IdControl":IdControl},{"$Set":{"Codigos":Codigo}})
+                return ("Codigos Agregado")
+        else:
+            return ("No existe Control con este ID")
+        # si la  marca es dif ded "" entonces lo anahdes a la marca
+
+    def ElimnarControl(self , IdControl,MarcaToo):
+        #Necesitas borrar del disposiivo y del cuarto 
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            OpCuarto().RestDisp (M["IdCuarto"])
+            if M["Dispositivo"]=="Rasp":
+                OpRasp().BorrarPinOcupadoRasp(M["IdDisp"],M["Pin"])
+            if M["Dispositivo"]=="Node":
+                OpNode().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"],0)
+            if M["Marca"] != "":
+                if MarcaToo == True:
+                    OpMarcaControl().EliminarMarca(M["Marca"])
+                
+                coleccion.delete_one({"IdControl":IdControl})
+                
+                return ("Control Borrado")
+            else:
+                coleccion.delete_one({"IdControl":IdControl})
+                return ("Control Borrados")
+        else:
+            return ("No existe Control con este ID")
+            
+    def ModificarControl(self , IdControl,Parametro,Valor):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            if Parametro == "IdControl" or Parametro=="Dispositivo" or Parametro=="IdDisp" or Parametro == "Codigos" or Parametro == "Marca":
+                if Parametro == "Marca":
+                    return ("Utilize otra funcion")
+                else:
+                    return ("Error no se puede cambiar Parametro , elimine dispositvo")
+            if Parametro == "Pin":
+                Valor = int (Valor)
+                if M["Dispositivo"] == "Rasp":
+                    if OpRasp().PinLibre(M["IdDisp"],Valor) == True:
+                        OpRasp().BorrarPinOcupadoRasp(M["IdDisp"],M["Pin"])
+                        OpRasp().AddPinOcupadoRasp(M["IdDisp"],Valor,"IN")
+                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        return ("Complete")
+                    else:
+                        return ("Valor de Pin Usado")
+                    
+                if M["Dispositivo"] == "Node":
+                    if OpNode().PinLibre(M["IdDisp"],Valor) == True:
+                        OpNode().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"],0)
+                        OpNode().AddPinOcupadoNode(M["IdDisp"],Valor,"IN")
+                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        return ("Complete")
+                    else:
+                        return ("Valor de Pin Usado")
+
+            if Parametro == "Nombre":
+                Valor = str(Valor)
+                coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                return ("Complete")
+        else:
+            return ("No existe Control con este ID")
+    def BorrarTodosCodigos(self,IdControl,MarcaToo):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+
+            if M["Marca"] != "":
+                if MarcaToo == True:
+                    OpMarcaControl().BorrarTodosCodigos(M["Marca"])
+                coleccion.update__one({"IdControl":IdControl},{"$set":{"Codigos":{}}})
+                
+                return ("Codigos Borrados")
+            else:
+                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":{}}})
+                return ("Codigos Borrados s")
+        else:
+            return ("No existe Control con este ID")
+    
+    def RegistrarMarca(self,IdControl,Marca):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            if M["Marca"]=="":
+                if OpMarcaControl().BuscarMarcaNombre(Marca) == 0:
+                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":Marca}})
+                    OpMarcaControl().InsertarMarca(Marca,M["Codigos"])
+                else:
+                    return ("Marca ya existe cambie el nombre")
+                
+            else:
+                return ("Ya se Registro Marca")
+        else:
+            return ("No existe Control con este ID")
+
+class OpMarcaControl:
+    def __init__ (self):
+        self.CollectionName="MarcaControl"
+    def MostrarMarcas(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Marcas":" "}
+        auxdict= defaultdict(list)
+        for var in (coleccion.find({  },{"_id":0}).sort("IdMarcaControl",pymongo.ASCENDING)):
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+        if auxdict :
+            return auxdict
+        else:
+            return "No Existen Marcas"
+    def BuscarMarcaNombre(self,Marca):
+        db = cliente[NombreBase]
+        encontro=0
+        coleccion=db[self.CollectionName]
+        for vaca in coleccion.find({ "Marca": Marca },{ "_id": 0}):
+            encontro=1
+            break
+        
+        if encontro>0:
+            return vaca
+        if encontro==0:
+            return 0
+    def InsertarMarca(self,Marca,Codigos):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre(Marca) == 0 :
+            cua=MarcasControles(Marca,Codigos)
+            coleccion.insert_one(cua.toDBCollection())
+            return ("Completado")
+
+        else:
+            return ("Existe Marca con este Nombre")
+    def DevolverCodigos(self,Marca):
+        if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
+            X=OpMarcaControl().BuscarMarcaNombre(Marca)
+            return X["Codigos"]
+        else:
+            return("No existe Marca")
+    def AddCodigo(self,Marca,Codigo,Valor):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre != 0 :
+            C=OpMarcaControl().DevolverCodigos(Marca)
+            C.update({str(Codigo):Valor})
+            coleccion.update({ "Marca": Marca}, {"$set":{ "Codigos": C}},multi=True)
+            return ("Complete")
+        else:
+            return("No existe Marca")
+    def BorrarCodigo(self,Marca,Codigo):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre != 0 :
+            C=OpMarcaControl().DevolverCodigos(Marca)
+            del C[str(Codigo)]
+            coleccion.update({ "Marca": Marca}, {"$set":{ "Codigos": C}},multi=True)
+            return ("Complete")
+        else:
+            return("No existe Marca")
+    def ActualizarCodigos(self,Marca,Codigos):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
+            coleccion.update({ "Marca": Marca}, {"$set":{ "Codigos": Codigos}},multi=True)
+            return ("Complete")
+        else:
+            return("No existe Marca")
+
+    def BorrarTodosCodigos(self,Marca):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
+            coleccion.update({ "Marca": Marca}, {"$set":{ "Codigos": {}}},multi=True)
+            return ("Complete")
+        else:
+            return("No existe Marca")
+    def EliminarMarca(self,Marca):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
+            coleccion.delete_one({ "Marca": Marca})
+            return ("Eliminado")
+        else:
+            return("No existe Marca")
+    def CambiarNombreMarca(self,Marca,New):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
+            coleccion.update_one({ "Marca": Marca}, {"$set":{ "Marca": New}})
+            return ("Complete")
+        else:
+            return("No existe Marca")
+
+class OpLecIR:
+    def __init__(self):
+        self.CollectionName="LecIR"
+    def BuscarLector(self,id):
+        db = cliente[NombreBase]
+        encontro=0
+        coleccion=db[self.CollectionName]
+        id=int(id)
+        for vaca in coleccion.find({ "IdLec": id },{ "_id": 0}):
+            encontro=1
+            break
+        if encontro>0:
+            return vaca
+        if encontro==0:
+            return 0
+    def MostrarControles(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Lectores":" "}
+        auxdict= defaultdict(list)
+        for var in (coleccion.find({  },{"_id":0}).sort("IdLec",pymongo.ASCENDING)):
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+
+        if auxdict :
+            return auxdict
+        else:
+            return "No Existen Luces"
+    def InsertarLector(self,IdLec,IdDisp,IdCasa,Dispositivo,Pin):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpLecIR().BuscarLector(IdLec) == 0 :
+            if OpCasa().buscaridcasa(IdCasa):
+                if Dispositivo == "Rasp":
+                    if OpRasp().buscarRasp(IdDisp)==True:
+                        if OpRasp().PinLibre(IdDisp,Pin):
+                            L=LecIR(IdLec,IdDisp,IdCasa,Dispositivo,Pin,"")
+                            
+                            OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"IN")
+                        else:
+                            return ("Pin Ocupado")
+                    else:
+                        return ("No existe ID de Rasp")
+                if Dispositivo == "Node":
+                    if OpNode().buscarNode(IdDisp) !=0:
+                        if OpNode().PinLibre(IdDisp,Pin):
+                            L=LecIR(IdLec,IdDisp,IdCasa,Dispositivo,Pin,"")
+                            
+                            OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"IN")
+                        else:
+                            return ("Pin Ocupado")
+                    else:
+                        return ("No existe ID de Node")
+                coleccion.insert_one(L.toDBCollection())
+                OpCasa().agregarDisp(IdCasa)
+                return ("Completado")
+            else:
+                return ("Erro No Existe Cuarto")
+        else :
+            return ("Ya existe Lector Con este ID")
+    def EliminarLector(self,IdLec):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpLecIR().BuscarLector(IdLec) != 0:
+            for vaca in coleccion.find({ "IdLec": id },{ "_id": 0}):
+                print (vaca)
+
+            if vaca["Dispositivo"] == "Rasp":
+                OpRasp().BorrarPinOcupadoRasp(vaca["IdDisp"],vaca["Pin"])
+            if vaca["Dispositivo"] == "Node":
+                OpNode().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"],0)
+            coleccion.delete_one({ "IdLec": id })
+            return ("Complete")
+        else:
+            return("No exise Lector con ese ID")
+    def RegLectura(self,IdLec,Codigo):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        if OpLecIR().BuscarLector(IdLec) != 0:
+            coleccion.update_one({ "IdLec": IdLec },{"$set":{"LastData": Codigo}})
+            return("Completado Registro de lectura")
+            
+        else:
+            return("No exise Lector con ese ID")
+    def LastLec(self,IdLec):
+        db = cliente[NombreBase]
+        if OpLecIR().BuscarLector(IdLec) != 0:
+            val=OpLecIR().BuscarLector(IdLec)
+            return val["LastData"]
+        else :
+            return ("Error ID no existe")
+
 # class oOSonos:,class OpRF:,class OpControl:,class OpTemp:,  FALTA TODO ESTO 
 
 
+# print(OpMarcaControl().InsertarMarca("Samsung",{"Apagar":"0xE0E040BF","prechanel":"0xE0E0C837"}))
+# print (OpControl().InsertarControl(1,1,"Samsung","Rasp",17,"Tv","1",1))
+# print (OpControl().InsertarControl(2,1,"","Rasp",18,"Tv2","1",1))
+# print (OpControl().InsertarControl(3,1,"","Rasp",19,"Tv2","1",1))
+# print (OpControl().AddCodigo(1,"prechanel","0xE0E0C837"))
+# print (OpControl().AddCodigo(2,"mas","0xE0E0E01F"))
+# print (OpControl().ElimnarControl(2,True))
+# print (OpControl().BorrarCodigo(1,"prechanel"))
+# print (OpControl().BorrarTodosCodigos(2,True))
+
+# print (OpLecIR().InsertarLector(1,1,1,"Rasp",9))
 # OpCasa().insertarCasa(1,"Gabo",124.11)
 # OpRasp().InsertarRasp(1,1,16,16,[1,0,4,5,6,7])
 # OpCuarto().insertarCuarto(1,1,"gABOS","","")
@@ -1590,10 +2042,12 @@ OpCortina().MostrarCortinas()'''
 # OpCortina().insertarCortina(1,1,1,"IoT",4,6,9,"Roller","Derecha")
 
 # OpCortina().EliminarCortina(1)
-# OpInterruptor().EliminarInterruptor(1)
-print (OpInterruptor().modInterruptor(1,"Pin",0))
-print (OpInterruptor().modidificarEstadoiNT(1,"Encendido"))
+# # OpInterruptor().EliminarInterruptor(1)
+# print (OpInterruptor().modInterruptor(1,"Pin",0))
+# print (OpInterruptor().modidificarEstadoiNT(1,"Encendido"))
 # OpRasp().BorrarPinIot(1,5,"l")
+
+
 
 
 
