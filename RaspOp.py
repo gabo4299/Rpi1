@@ -7,7 +7,8 @@ import busio
 import board
 import time
 class Rasp:
-    def __init__(self ,Clock11,Latch12,Data14,S0,S1,S2,S3,l1,SS0,SS1,SS2,SS3,l2):
+    def __init__(self ,Clock11,Latch12,Data14,S0,S1,S2,S3,l1,SS0,SS1,SS2,SS3,l2,CantLuces):
+        
         self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         GPIO.setwarnings(False)
 
