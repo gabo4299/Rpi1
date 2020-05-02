@@ -1,5 +1,5 @@
 import pymongo
-from Base import Cuarto ,Interruptor,Cortina,Casa,Control,Node,Raspberry,LecIR,MarcasControles
+from Base import Cuarto ,Interruptor,Cortina,Casa,Control,Node,Raspberry,LecIR,MarcasControles,Esp32
 from itertools import chain
 from collections import defaultdict
 import json
@@ -13,6 +13,220 @@ NombreBase="pruebaAcuarto2"
 #x=Cuarto(1,'CuartoGabo','NOjet','123',1)
 
 #coleccion.insert_one(x.toDBCollection())
+class OpEsp32:
+    def __init__ (self):
+        self.CollectionName="Esp32"
+    def buscarEsp32(self,id):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        encontro=0
+        id=int (id)
+        variablepregunta={ "IdEsp32": id}
+        for vaca in coleccion.find({ "IdEsp32": id},{ "_id": 0, "IdEsp32": 1}):
+            if vaca==variablepregunta:
+                encontro=1
+                
+                break
+        
+        if encontro==1:
+            return True
+        if encontro==0:
+            return False
+    def MostrarEsp32s(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Esp32":" "}
+        auxdict= defaultdict(list)
+
+        con =0
+        #sort ordenar culito
+        for var in (coleccion.find({  },{"_id":0}).sort("IdEsp32",pymongo.ASCENDING)):
+            con=con+1
+            
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+
+        return auxdict 
+
+    def MostrarESP32Esp(self,id):
+     db = cliente[NombreBase]
+     coleccion=db[self.CollectionName]
+     
+     for var in coleccion.find({"IdEsp32": id },{"_id":0}):
+          
+        
+        return var  
+
+        
+        break
+    def InsertarEsp32(self,IdEsp32,IdCasa,Descripcion):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        IdCasa=int(IdCasa)
+        #el node solo va poder operar INFRAROJOS , I-O , 1 analogico ,motor ,step
+        if  OpEsp32().buscarEsp32(IdEsp32)==True: 
+            print ("Ya existe  Esp32 con este id ")
+            return ("Ya existe  Esp32 con este id ")
+        else:
+            
+            lista=[34,35,32,33,25,26,27,14,12,13,15,2,4,16,17,5,18,19,21,1,3,22,23]
+            lista.sort()
+            cua=Esp32(IdEsp32,IdCasa,lista,{},len(lista),0,"Desactivado",Descripcion)
+            
+            
+            coleccion.insert_one(cua.toDBCollection())
+            return ("Creado Satisfactoriamente")
+            
+    def CambiarEstado(self,IdEsp32):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        IdEsp32=int(IdEsp32)
+        if  OpEsp32().buscarEsp32(IdEsp32)==True: 
+            n=OpEsp32().MostrarESP32Esp(IdEsp32)
+            if (n["Estado"] == "Activado"):
+                coleccion.update_one({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Desactivado"}})
+            else:
+                coleccion.update_one({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Activado"}})
+        else:
+            return ("No existe Esp32 con este ID")
+            
+
+    def ModEsp32(self,id,paramet,valor):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        condicion=True
+        #x=input("Ingrese id:")
+        id=int(id)
+        if OpEsp32().buscarEsp32(id)==True:
+            #y=input("Ingrese: parametro: ")
+
+            for vaca in coleccion.find({ str(paramet): {"$exists": "true" }  }):
+                #z=input('Ingrese nuevo valor pls: ')
+                
+                condicion=False
+                if paramet=="IdEsp32" or paramet=="IdCasa" or paramet=="Cantidad Pines Libres" or paramet=="Cantidad Pines Ocupados" or  paramet=="Cantidad Analogicos" :
+                    valor=int(valor)
+                    
+                    coleccion.update_one({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
+
+                    
+                            
+                else:
+                    
+                    if paramet=="PinesOcupados":
+                        
+                        coleccion.update({ "IdEsp32": id}, {"$set":{ str(paramet): valor}},multi=True)
+                    else:
+                        coleccion.update_one({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
+                    
+
+                #if vaca is not None:
+                #   print("ok")
+
+            else:
+                if condicion==True:
+                    return "No existe parametro"
+                
+
+
+        else:
+            
+            print("El id de node no existe")
+            return("El id de node no existe")
+   
+    def EliminarEsp32(self,ID):
+        db = cliente[NombreBase]
+    
+        coleccion=db[self.CollectionName]
+        #x=input("Ingrese id:")
+        ID=int(ID)
+        if OpEsp32().buscarEsp32(ID)==True:
+
+            print("Eliminando")        
+            coleccion.delete_one({ "IdEsp32": ID })
+            DeleteDisp().ElimianrDisp("IdEsp32",ID)
+            return ('elimiando ')
+                
+            
+        
+        else:
+            print("No se encontro id")
+    def DevolverPinsLibres(self,id):
+        id = int (id)
+        if OpEsp32().buscarEsp32(id):
+            R=OpEsp32().MostrarESP32Esp(id)
+            return R["PinesLibres"]
+    def DevolverPinsOcupados(self,id):
+         id = int (id)
+         if OpEsp32().buscarEsp32(id):
+            R=OpEsp32().MostrarESP32Esp(id)
+            return R["PinesOcupados"]
+         else:
+             return("No existe Esp32 con este ID")
+    def DevolverSoloPinsOcupados(self,id):
+        id = int (id)
+        if OpEsp32().buscarEsp32(id):
+            R=OpEsp32().DevolverPinsOcupados(id)
+            lista=[]
+            for k,v in R.items():
+                lista.append(k)
+            
+            return lista      
+    def AddPinOcupadoNode(self , id,pin,modo ):
+        #agregar condicions de modo
+        id =int (id)
+        pin = int (pin)
+        if OpEsp32().buscarEsp32(id):
+                    
+                
+                if pin in OpEsp32().DevolverPinsLibres(id):
+                    S=OpEsp32().MostrarESP32Esp(id)
+                    val=OpEsp32().DevolverPinsOcupados(id)
+                    newpines=OpEsp32().DevolverPinsLibres(id)
+                    newpines.remove(pin)
+
+                    val.update({str(pin):modo})
+                    OpEsp32().ModEsp32(id,"PinesLibres",newpines)
+                    OpEsp32().ModEsp32(id,"PinesOcupados",val)
+                    OpEsp32().ModEsp32(id,"Cantidad Pines Libres",len(newpines))
+                    OpEsp32().ModEsp32(id,"Cantidad Pines Ocupados",len(val))
+                    return ("Complete")
+                else:
+                    return("Pin ocupado")
+        else:
+            return ("No existe id de Esp32")
+    
+    def BorrarPinOcupadoNode(self,id,pin):
+        id = int ( id)
+        pin = int (pin)
+            
+        if OpEsp32().buscarEsp32(id):
+
+        
+        
+                PiOc=OpEsp32().DevolverPinsOcupados(id)
+                PiLib=OpEsp32().DevolverPinsLibres(id)
+                if (str(pin)) in PiOc:
+                        del PiOc[str(pin)]
+                        PiLib.append((int(pin)))
+                        OpEsp32().ModEsp32(id,"PinesLibres",PiLib)
+                        OpEsp32().ModEsp32(id,"PinesOcupados",PiOc)
+                        OpEsp32().ModEsp32(id,"Cantidad Pines Libres",len(PiLib))
+                        OpEsp32().ModEsp32(id,"Cantidad Pines Ocupados",len(PiOc))
+                else:
+                    return ("Pin No ocupado")
+        else:
+            return ("No existe id de Esp32")
+    def PinLibre(self,id,pin):
+        id = int  ( id)
+        if OpEsp32().buscarEsp32(id):
+            pin=int(pin)
+            if pin in OpEsp32().DevolverPinsLibres(id):
+                return True
+            else:
+                return False
 
 
 class OpRasp:
@@ -39,6 +253,24 @@ class OpRasp:
         if encontro==0:
             return False
 
+    def MostrarRasps(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Rasps":" "}
+        auxdict= defaultdict(list)
+
+        con =0
+        #sort ordenar culito
+        for var in (coleccion.find({  },{"_id":0}).sort("IdRasp",pymongo.ASCENDING)):
+            con=con+1
+            
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+
+        return auxdict 
+
     def MostrarRaspEsp(self,id):
      """ Devuelve una sola Raspberry del Id especificado"""
      db = cliente[NombreBase]
@@ -48,7 +280,7 @@ class OpRasp:
           
         
         return var         
-    def InsertarRasp(self,IdRasp,IdCasa,CantidadPWM,CantidadLuz,IoT):
+    def InsertarRasp(self,IdRasp,IdCasa,CantidadPWM,CantidadLuz,IoT,Descripcion):
         """ Crea Una Nueva RaspBerry , los parametros:
 
          PWM es variable ya que se usa una i2c de pwms que con la direccion se pueden ampliar en cascada
@@ -82,9 +314,9 @@ class OpRasp:
             #FONDO=input ("Ingrese Fondo: ")
             #CONTRASENHA=input ("Ingrese contrasenhaa: ") '''
             if IoT == 0:
-                cua=Raspberry(IdRasp,IdCasa,allpins,PinesOcupados,len(allpins),0,0,"",0,"",0,"")
-                OpCasa().agregarRasp(IdCasa)
-                return (self.complete)
+                cua=Raspberry(IdRasp,IdCasa,allpins,PinesOcupados,len(allpins),0,0,"",0,"",0,"",Descripcion)
+                # OpCasa().agregarRasp(IdCasa)
+               
                 
             else:
                 lent=len(IoT)
@@ -117,7 +349,7 @@ class OpRasp:
                     for x in range (0,cantidadsensores):
                         sens.append(x)
                     for y in IoT:
-                        if  len (PinesOcupados) <= 3:
+                        if  len (PinesOcupados) < 3:
                             PinesOcupados.update({str(y):"IoT_Luz"})
                         else :
                             PinesOcupados.update({str(y):"IoT_Sen"})
@@ -129,6 +361,11 @@ class OpRasp:
                     cantidadsensores=32
                     for x in range (0,cantidadsensores):
                         sens.append(x)
+                    for y in IoT:
+                        if  len (PinesOcupados) < 3:
+                            PinesOcupados.update({str(y):"IoT_Luz"})
+                        else :
+                            PinesOcupados.update({str(y):"IoT_Sen"})
                 
 
                 for x in allpins:
@@ -152,7 +389,7 @@ class OpRasp:
                 
                 
                 
-                cua=Raspberry(IdRasp,IdCasa,pinsl,PinesOcupados,len(pinsl),len(PinesOcupados),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz)
+                cua=Raspberry(IdRasp,IdCasa,pinsl,PinesOcupados,len(pinsl),len(PinesOcupados),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz,Descripcion)
                 
             coleccion.insert_one(cua.toDBCollection())
             OpCasa().agregarRasp(IdCasa)
@@ -208,6 +445,7 @@ class OpRasp:
 
             print("Eliminando")        
             coleccion.delete_one({ "IdRasp": ID })
+            DeleteDisp().ElimianrDisp("Rasp",ID)
             return("Eliminado")  
             
         
@@ -281,7 +519,7 @@ class OpRasp:
                     if s["Cantidad Sensores"] !=0:
                         OpRasp().ModRasp(1,"Sensores Libres",newvalue)
                         
-                        return("completado")
+                        return ("Complete")
                     else:
                         return("No se registraron Sensores ")
                     
@@ -292,7 +530,7 @@ class OpRasp:
                             newvalue.remove(x)
                             break
                     OpRasp().ModRasp(1,"PWM Libres",newvalue)
-                    return("completado")
+                    return ("Complete")
                 if tipo =="luz" or tipo =="l" or tipo == "L":
                     newvalue=s["Interruptores/Luces Libres"]
                     for x in s["Interruptores/Luces Libres"]:
@@ -300,7 +538,7 @@ class OpRasp:
                             newvalue.remove(x)
                             break
                     OpRasp().ModRasp(1,"Interruptores/Luces Libres",newvalue)
-                    return("completado")
+                    return ("Complete")
                 
             else:
                 return ("No exixe Modulo IoT en esta Rasp")
@@ -418,6 +656,9 @@ class OpRasp:
                 val.update({str(pin):modo})
                 OpRasp().ModRasp(id,"PinesLibres",newpines)
                 OpRasp().ModRasp(id,"PinesOcupados",val)
+                OpRasp().ModRasp(id,"Cantidad Pines Libres",len(newpines))
+                OpRasp().ModRasp(id,"Cantidad Pines Ocupados",len(val))
+                return ("Complete")
             else:
                 return("Pin ocupado")
         else:
@@ -436,6 +677,8 @@ class OpRasp:
                     PiLib.sort()
                     OpRasp().ModRasp(id,"PinesLibres",PiLib)
                     OpRasp().ModRasp(id,"PinesOcupados",PiOc)
+                    OpRasp().ModRasp(id,"Cantidad Pines Libres",len(PiLib))
+                    OpRasp().ModRasp(id,"Cantidad Pines Ocupados",len(PiOc))
             else:
                 return ("Pin No ocupado")
         else:
@@ -479,14 +722,30 @@ class OpRasp:
                 
         else:
             return ("Erro no existe ID de Raspberry")
-
+class DeleteDisp:
+    def __init__(self):
+        self.a="Cortinas"
+        self.b="Interruptores"
+        self.c="LecIR"
+        self.d="Control"
+    def ElimianrDisp(self,Disp,Id):
+        db = cliente[NombreBase]
+        c1=db[self.a]
+        c2=db[self.b]
+        c3=db[self.c]
+        c4=db[self.d]
+        Id=int(Id)
         
-# devolver pwm devolver sensores devolver i/o (luz)
-
-#falta agregar pinocupado 
-#verificarpin 
-#quitar pin 
-
+        for vaca in c1.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdCortina": 1}):
+            
+            c1.delete_one({ "IdCortina": vaca["IdCortina"] })
+        for vaca in c2.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdInterruptor": 1}):
+            c2.delete_one({ "IdInterruptor": vaca["IdInterruptor"] })
+        for vaca in c3.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdLec": 1}):
+            
+            c3.delete_one({ "IdLec": vaca["IdLec"] })
+        for vaca in c4.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdControl": 1}):
+            c4.delete_one({ "IdControl": vaca["IdControl"] })
 class OpNode:
     def __init__ (self):
         self.CollectionName="Node"
@@ -506,7 +765,23 @@ class OpNode:
             return True
         if encontro==0:
             return False
-    
+    def MostrarNodes(self):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        aux={"Nodes":" "}
+        auxdict= defaultdict(list)
+
+        con =0
+        #sort ordenar culito
+        for var in (coleccion.find({  },{"_id":0}).sort("IdNode",pymongo.ASCENDING)):
+            con=con+1
+            
+            aux=aux.copy()
+            aux.update(var)
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+
+        return auxdict 
 
     def MostrarNodeEsp(self,id):
      db = cliente[NombreBase]
@@ -519,11 +794,10 @@ class OpNode:
 
         
         break
-    def InsertarNode(self,IdNode,IdCasa,pinLibres):
+    def InsertarNode(self,IdNode,IdCasa,Descripcion):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         IdCasa=int(IdCasa)
-        pinLibres=int(pinLibres)
         #el node solo va poder operar INFRAROJOS , I-O , 1 analogico ,motor ,step
         if  OpNode().buscarNode(IdNode)==True: 
             print ("Ya existe  Node con este id ")
@@ -531,18 +805,33 @@ class OpNode:
         else:
             
             
-            cua=Node(IdNode,IdCasa,["D0","D1","D2","D3","D4","D5","D6","D7","D8"],{},pinLibres,0,"A0","",1)
+            cua=Node(IdNode,IdCasa,["D0","D1","D2","D3","D4","D5","D6","D7","D8"],{},9,0,"A0","",1,"Desactivado",Descripcion)
             
             
             coleccion.insert_one(cua.toDBCollection())
             return ("Creado Satisfactoriamente")
+            
+    def CambiarEstado(self,IdNode):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        IdNode=int(IdNode)
+        if  OpNode().buscarNode(IdNode)==True: 
+            n=OpNode().MostrarNodeEsp(IdNode)
+            if (n["Estado"] == "Activado"):
+                coleccion.update_one({ "IdNode": IdNode}, {"$set":{ "Estado": "Desactivado"}})
+            else:
+                coleccion.update_one({ "IdNode": IdNode}, {"$set":{ "Estado": "Activado"}})
+        else:
+            return ("No existe Node con este ID")
+            
+
     def ModNode(self,id,paramet,valor):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         condicion=True
         #x=input("Ingrese id:")
         id=int(id)
-        if OpRasp().buscarRasp(id)==True:
+        if OpNode().buscarNode(id)==True:
             #y=input("Ingrese: parametro: ")
 
             for vaca in coleccion.find({ str(paramet): {"$exists": "true" }  }):
@@ -588,7 +877,9 @@ class OpNode:
         if OpNode().buscarNode(ID)==True:
 
             print("Eliminando")        
+            DeleteDisp().ElimianrDisp("Node",ID)
             coleccion.delete_one({ "IdNode": ID })
+            
             return ('elimiando ')
                 
             
@@ -600,13 +891,7 @@ class OpNode:
         if OpNode().buscarNode(id):
             R=OpNode().MostrarNodeEsp(id)
             return R["PinesLibres"]
-        def DevolverPinsOcupados(self,id):
-         id = int (id)
-         if OpRasp().buscarRasp(id):
-            R=OpNode().MostrarNodeEsp(id)
-            return R["PinesOcupados"]
-         else:
-             return("No existe raspberry con este ID")
+
     def DevolverPinsOcupados(self,id):
          id = int (id)
          if OpNode().buscarNode(id):
@@ -638,34 +923,42 @@ class OpNode:
     def AddPinOcupadoNode(self , id,pin ,modo):
         #agregar condicions de modo
         id =int (id)
-        pin = int (pin)
-        if OpRasp().buscarRasp(id):
+        
+        if OpNode().buscarNode(id):
             if modo=="Analogico" or modo == "a" or modo=="A":
+                pin = int (pin)
                 if pin==0:
                     OpNode().ModNode(id,"Analogico Libre","")
 
                     OpNode().ModNode(id,"Analogico Ocupado","A0")
-                    return ("pin Actualizado")
+                    return ("Complete")
                 else:
                     return ("pin erroneo")
                     
 
                 
             else:
+                pin2 = pin
                 pin="D"+str(pin)
-                if pin in OpNode().DevolverPinsLibres(id):
+                if pin in OpNode().DevolverPinsLibres(id) or pin2 in OpNode().DevolverPinsLibres(id) :
                     S=OpNode().MostrarNodeEsp(id)
                     val=OpNode().DevolverPinsOcupados(id)
                     newpines=OpNode().DevolverPinsLibres(id)
-                    newpines.remove(pin)
-
-                    val.update({str(pin):modo})
+                    if pin in OpNode().DevolverPinsLibres(id):
+                        newpines.remove(pin)
+                        val.update({str(pin):modo})
+                    else:
+                        newpines.remove(pin2)
+                        val.update({str(pin2):modo})
                     OpNode().ModNode(id,"PinesLibres",newpines)
                     OpNode().ModNode(id,"PinesOcupados",val)
+                    OpNode().ModNode(id,"Cantidad Pines Libres",len(newpines))
+                    OpNode().ModNode(id,"Cantidad Pines Ocupados",len(val))
+                    return ("Complete")
                 else:
                     return("Pin ocupado")
         else:
-            return ("No existe id de Raspberry")
+            return ("No existe id de Node")
     
     def BorrarPinOcupadoNode(self,id,pin,A):
         id = int ( id)
@@ -687,6 +980,8 @@ class OpNode:
                         PiLib.append(("D"+str(pin)))
                         OpNode().ModNode(id,"PinesLibres",PiLib)
                         OpNode().ModNode(id,"PinesOcupados",PiOc)
+                        OpNode().ModNode(id,"Cantidad Pines Libres",len(PiLib))
+                        OpNode().ModNode(id,"Cantidad Pines Ocupados",len(PiOc))
                 else:
                     return ("Pin No ocupado")
         else:
@@ -694,8 +989,10 @@ class OpNode:
     def PinLibre(self,id,pin):
         id = int  ( id)
         if OpNode().buscarNode(id):
+            pin2=pin
             pin="D"+str(pin)
-            if pin in OpNode().DevolverPinsLibres(id):
+            
+            if pin in OpNode().DevolverPinsLibres(id) or pin2 in OpNode().DevolverPinsLibres(id):
                 return True
             else:
                 return False
@@ -705,6 +1002,8 @@ class OpNode:
 class OpCasa:
     def __init__ (self):
         self.CollectionName="Casa"
+
+   
     def buscaridcasa(self,Id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -752,13 +1051,12 @@ class OpCasa:
      id=int(id)
      db = cliente[NombreBase]
      coleccion=db[self.CollectionName]
-     
+     var = {}
      for var in coleccion.find({"IdCasa": id },{"_id":0}):
           
         
         return var  
 
-        
         break
 
     def insertarCasa(self,IdCasa, Nombre,ip):
@@ -797,11 +1095,22 @@ class OpCasa:
 
         
             coleccion.delete_one({ "IdCasa": ID })
+            db["Cuartos"].drop()
+            db["Rasp"].drop()
+            db["Node"].drop()
+            db["Cortinas"].drop()
+            db["Interruptores"].drop()
+            db["Cuartos"].drop()
+            db["Control"].drop()
+            db["LecIR"].drop()
+            db["Esp32"].drop()        
+
+
                 
-            
+            return("Eliminado Satisfactoriamente")
         
         else:
-            print("No se encontro id")
+            return("No se encontro id")
 
 
     def modificarCasa(self,id,paramet,valor):
@@ -1034,6 +1343,7 @@ class OpCuarto:
             print("Eliminando")
             db["Interruptores"].delete_many({ "IdCuarto": ID })
             db["Cortinas"].delete_many({ "IdCuarto": ID })
+            db["Control"].delete_many({"IdCuarto":ID})
             s=OpCuarto().MostrarCuartoEsp(ID)
             OpCasa().RestCuarto( s["idcasa"])
             coleccion.delete_one({ "idcuarto": ID })
@@ -1151,7 +1461,7 @@ class OpInterruptor:
         if auxdict :
             return auxdict
         else:
-            return "No Existen Luces"
+            return "No Existen"
             
 
     def buscarIdInterruptor(self,x):
@@ -1181,7 +1491,7 @@ class OpInterruptor:
         
         if  OpCuarto().buscaridcuarto(IDCUARTO)==True:
             coleccion=db[self.CollectionName]
-            if (Dispositivo=="Rasp" and OpRasp().buscarRasp(IDDISPOSITIVO))  or (Dispositivo=="Node" and OpNode().buscarNode(IDDISPOSITIVO)) or (Dispositivo == "IoT" and OpRasp().ComprobarIoT(IDDISPOSITIVO)):
+            if (Dispositivo=="Rasp" and OpRasp().buscarRasp(IDDISPOSITIVO))  or (Dispositivo=="Node" and OpNode().buscarNode(IDDISPOSITIVO)) or (Dispositivo == "IoT" and OpRasp().ComprobarIoT(IDDISPOSITIVO))or (Dispositivo == "Esp32" and OpEsp32().buscarEsp32(IDDISPOSITIVO) != 0):
         # y=input("Ingrese Id Del nuevo Interruptor: ")
                 IDINTERRUPTOR=int(IDINTERRUPTOR)
                 if OpInterruptor().buscarIdInterruptor(IDINTERRUPTOR)!=0:
@@ -1192,20 +1502,35 @@ class OpInterruptor:
                     #print ("llegaste aqui")
                     #z=input("Insertar Pin: ")
                     PIN=int (PIN)
-                    if (Dispositivo=="Rasp" and OpRasp().PinLibre(IDDISPOSITIVO,PIN)==False)  or (Dispositivo=="Node" and OpNode().PinLibre(IDDISPOSITIVO,PIN)==False) or (Dispositivo == "IoT" and OpRasp().PinLibreIoT(IDDISPOSITIVO,PIN,"l")==False):
+                    if (Dispositivo=="Rasp" and OpRasp().PinLibre(IDDISPOSITIVO,PIN)==False)  or (Dispositivo=="Node" and OpNode().PinLibre(IDDISPOSITIVO,PIN)==False) or (Dispositivo == "IoT" and OpRasp().PinLibreIoT(IDDISPOSITIVO,PIN,"l")==False) or (Dispositivo=="ESP32" and OpEsp32().PinLibre(IDDISPOSITIVO,PIN)==False):
                         print('error Pin Usado')
                         return('error Pin Usado')
 
                     else:
-                        if Dispositivo == "Rasp":
-                            OpRasp().AddPinOcupadoRasp(IDDISPOSITIVO,PIN,"OUT")
-                        if Dispositivo == "IoT":
-                            OpRasp().AddPinOcupadoIoT(IDDISPOSITIVO,PIN,"l")
-                        if Dispositivo == "Node":
-                            OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
-                        #DIMMER=input("Ingrese Si es Dimer o No: ")
+                        if DIMMER :
+
+                            if Dispositivo == "Rasp":
+                                OpRasp().AddPinOcupadoRasp(IDDISPOSITIVO,PIN,"Dimmer")
+                            if Dispositivo == "IoT":
+                                return ("No se puede utilizar en la placa IoT")
+                            if Dispositivo == "Node":
+                                OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
+                            if Dispositivo == "Esp32":
+                                OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,0,NOMBRE)
+                        else:
+                            if Dispositivo == "Rasp":
+                                OpRasp().AddPinOcupadoRasp(IDDISPOSITIVO,PIN,"OUT")
+                            if Dispositivo == "IoT":
+                                OpRasp().AddPinOcupadoIoT(IDDISPOSITIVO,PIN,"l")
+                            if Dispositivo == "Node":
+                                OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
+                            if Dispositivo == "Esp32":
+                                OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE)
                         
-                        inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE)
+                        
+                       
                         coleccion.insert_one(inte.toDBCollection())
                         OpCuarto().agregarDisp(IDCUARTO)
                         OpCuarto().MostrarCuartoEsp(IDCUARTO)
@@ -1241,6 +1566,8 @@ class OpInterruptor:
                 OpRasp().BorrarPinIot(jsonToPython["IdDisp"],jsonToPython["Pin"],'l')
             if jsonToPython['Dispositivo'] == "Node":
                 OpNode().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pin"],0)            
+            if jsonToPython['Dispositivo'] == "Esp32":
+                OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pin"])            
             
             coleccion.delete_one( { "IdInterruptor": id })
 
@@ -1258,13 +1585,14 @@ class OpInterruptor:
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]   
         idInt=int(idInt)
-        if(OpInterruptor().buscarIdInterruptor(idInt)!=0):
+        auxInt=OpInterruptor().buscarIdInterruptor(idInt)
+        if(auxInt!=0):
             coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ 'Estado': estado}})
-            OpInterruptor().MostrarInterruptores()
+            return ("completado")
         else:
             return ("No existe Interruptor")
 
-    def modInterruptor(self,idInt,Parametro,valor):
+    def modInterruptor(self,idInt,Parametro,valor): 
         
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
@@ -1283,7 +1611,7 @@ class OpInterruptor:
                                     if OpRasp().PinLibre(i["IdDisp"],valor) == True:
                                         OpRasp().BorrarPinOcupadoRasp(i["IdDisp"],i["Pin"])
                                         OpRasp().AddPinOcupadoRasp(i["IdDisp"],valor,"OUT")
-                                        
+                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1292,7 +1620,7 @@ class OpInterruptor:
                                     if OpRasp().PinLibreIoT(i["IdDisp"],valor,"l") == True:
                                         OpRasp().BorrarPinIot(i["IdDisp"],i["Pin"],"l")
                                         OpRasp().AddPinOcupadoIoT(i["IdDisp"],valor,"l")
-                                        
+                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1300,15 +1628,23 @@ class OpInterruptor:
                                     if OpNode().PinLibre(i["IdDisp"],valor) == True:
                                         OpNode().BorrarPinOcupadoNode(i["IdDisp"],i["Pin"],0)
                                         OpNode().AddPinOcupadoNode(i["IdDisp"],valor,"OUT")
-                                        
+                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                                        return ("Complete")
+                                    else:
+                                        return("Error Pin Usado")
+                                if i["Disposotivo"] == "Esp32":
+                                    if OpEsp32().PinLibre(i["IdDisp"],valor) == True:
+                                        OpEsp32().BorrarPinOcupadoNode(i["IdDisp"],i["Pin"])
+                                        OpEsp32().AddPinOcupadoNode(i["IdDisp"],valor,"OUT")
+                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
                                 
 
                                 return("complete")
-                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
-                        return ("Complete")
+                        
+                        
 
                     else:
                             coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
@@ -1324,8 +1660,14 @@ class OpInterruptor:
         else:
             print("No existe interruptor")
             return("No existe interruptor")
-
-
+    def LastID(self):
+        ints=OpInterruptor().MostrarInterruptores()
+        
+        if ints == "No Existen":
+            return -1
+        else :
+            tam = len (ints["IdInterruptor"])
+            return ints["IdInterruptor"][tam-1]
 '''jsonData = '{"name": "Frank", "age": 39}'
 print(jsonData)
 jsonToPython = json.loads(jsonData)
@@ -1352,7 +1694,10 @@ class OpCortina:
             for k, v in chain( var.items()):
                 auxdict[k].append(v)
 
-        return auxdict 
+        if auxdict :
+            return auxdict
+        else:
+            return "No Existen"
 
     def buscarIdCortina(self,x):
             db = cliente[NombreBase]
@@ -1378,7 +1723,7 @@ class OpCortina:
         #x=input('Ingrese Id Cuarto : ')
         IDCUARTO=int(IDCUARTO)
         IDDISPOSITIVO=int(IDDISPOSITIVO)
-        if (Dispositivo=="Rasp" and OpRasp().buscarRasp(IDDISPOSITIVO))  or (Dispositivo=="Node" and OpNode().buscarNode(IDDISPOSITIVO)) or (Dispositivo=="IoT" and OpRasp().ComprobarIoT(IDDISPOSITIVO)) :
+        if (Dispositivo=="Rasp" and OpRasp().buscarRasp(IDDISPOSITIVO))  or (Dispositivo=="Node" and OpNode().buscarNode(IDDISPOSITIVO)) or (Dispositivo=="IoT" and OpRasp().ComprobarIoT(IDDISPOSITIVO)) or (Dispositivo=="Esp32" and OpEsp32().buscarEsp32(IDDISPOSITIVO) !=0) :
             if  OpCuarto().buscaridcuarto(IDCUARTO)==True:
                 coleccion=db[self.CollectionName]
             # y=input("Ingrese Id Del nuevo Interruptor: ")
@@ -1391,7 +1736,7 @@ class OpCortina:
                     #print ("llegaste aqui")
                     #z=input("Insertar Pin: ")
                     PINMOTOR=int (PINMOTOR)
-                    if (Dispositivo=="Rasp" and OpRasp().PinLibre(IDDISPOSITIVO,PINMOTOR)==False)  or (Dispositivo=="Node" and OpNode().PinLibre(IDDISPOSITIVO,PINMOTOR)==False) or (Dispositivo == "IoT" and OpRasp().PinLibreIoT(IDDISPOSITIVO,PINMOTOR,"PWM")==False):
+                    if (Dispositivo=="Rasp" and OpRasp().PinLibre(IDDISPOSITIVO,PINMOTOR)==False)  or (Dispositivo=="Node" and OpNode().PinLibre(IDDISPOSITIVO,PINMOTOR)==False) or (Dispositivo == "IoT" and OpRasp().PinLibreIoT(IDDISPOSITIVO,PINMOTOR,"PWM")==False) or (Dispositivo=="Esp32" and OpEsp32().PinLibre(IDDISPOSITIVO,PINMOTOR)==False):
                         print('error Pin de motor  Usado')
                         return('error Pin de motor Usado')
 
@@ -1402,6 +1747,9 @@ class OpCortina:
                             ListSen=OpRasp().DevolverPinIoT(IDDISPOSITIVO,"s")
                         if Dispositivo=="Node" :
                             ListSen=OpNode().DevolverPinsLibres(IDDISPOSITIVO)
+                        if Dispositivo=="Node" :
+                            ListSen=OpEsp32().DevolverPinsLibres(IDDISPOSITIVO)
+
                         if (PINSENSOR1 in ListSen ) and (PINSENSOR1 != PINSENSOR2 ) and (PINSENSOR2 in ListSen) :
 
                             # if (PINSENSOR1 != PINSENSOR2) : para evitar que sean pines iguales 
@@ -1422,6 +1770,10 @@ class OpCortina:
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR1,"IN")
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR2,"IN")
                                     OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PINMOTOR,"PWM")
+                                if Dispositivo=="Esp32" :
+                                    OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR1,"IN")
+                                    OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PINSENSOR2,"IN")
+                                    OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PINMOTOR,"PWM")
                                 print ("Agregado Safisfactoriamente")
                                 return ("Agregado Safisfactoriamente")
                             #else:
@@ -1470,10 +1822,16 @@ class OpCortina:
                 OpNode().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pinmotor"],0) 
                 OpNode().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["PinSensor1"],0) 
                 OpNode().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["PinSensor2"],0) 
+            if jsonToPython['Dispositivo'] == "Esp32":
+                OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pinmotor"]) 
+                OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["PinSensor1"]) 
+                OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["PinSensor2"]) 
 
             print("eliminado")
             OpCortina().MostrarCortinas()
             OpCuarto().MostrarCuartoEsp(jsonToPython['IdCuarto'])
+
+            return "Eliminado"
 
             
         else:
@@ -1572,12 +1930,34 @@ class OpCortina:
                                     break
                                 else:
                                     return("Error pin ocupado")
+                        if cort["Dispositivo"] == "Esp32":
+                                if (Parametro=="Pinmotor" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["Pinmotor"])
+                                    OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"PWM")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor1" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor1"])
+                                    OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                if (Parametro=="PinSensor2" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
+                                    OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor2"])
+                                    OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
+                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    return ("Completado")
+                                    break
+                                else:
+                                    return("Error pin ocupado")
                         else:                                
                             print('error valor' , valor)
                             break
                     else:
                         
                         coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                        return ("Complete")
                         break
             else:
                 if condicion==True:
@@ -1585,23 +1965,34 @@ class OpCortina:
             
         else:
             return("No existe interruptor")
+    def LastID(self):
+        ints=OpCortina().MostrarCortinas()
+        
+        if ints == "No Existen":
+            return -1
+        else :
+            tam = len (ints["IdCortina"])
+            return ints["IdCortina"][tam-1]
 
 class OpControl:
     def __init__ (self):
         self.CollectionName="Control"
     def BuscarControl(self,id):
+        ''' Devuelve el control con el parametro id  '''
         db = cliente[NombreBase]
         encontro=0
         coleccion=db[self.CollectionName]
         id=int(id)
-        for vaca in coleccion.find({ "IdControl": id },{ "_id": 0}):
+        for vaca in coleccion.find({ "IdControl":id},{ "_id": 0}):
             encontro=1
             break
+        
         if encontro>0:
             return vaca
         if encontro==0:
             return 0
     def MostrarControles(self):
+        ''' Devuelve en un dict todos los controles regustrados'''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         aux={"Cuartos":" "}
@@ -1614,11 +2005,29 @@ class OpControl:
         if auxdict :
             return auxdict
         else:
-            return "No Existen Luces"
+            return "No Existen"
     
-    def InsertarControl(self,IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,Guardar):
+    def InsertarControl(self,IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,Guardar,Tipo):
+        '''Insertas Control Id del control , Id del dispositivo ,Marca para guardarla o buscarla , El dispisitvo :Rasp , Node o Esp32, El Pin , El nombre del Control
+        El Id DEL cUARTO ,
+        si  Guardar si es diferente a true y la marca dif a ""  entocnes agrega la marca y la guarda como marca de usauario , siempre y cuando la marca no exista ,y la marca no sea de sistema , 
+
+        si la marca seleccionada  es de sistema ej  samsung directamente hereda los controles de la marca samsung y no se puede editar ni eliminar sin importar el guardar
+
+        si la marca seccionada es de usuario y guardar es true entocnes ls modificiaciones o eliminadas tambien sera afectada la marca 
+
+        si se selecciona una marca y no se le pone guardar solamemente hereda los codigos
+
+        si se seleciona una marca no registrada tabien tendria que selecicconarse guardar  y asi anhadirlo 
+
+        si no se selcciona marca y se regisra como "" , los codigos solamente estaran en el control y si se elimina los codigso se pierden , a no ser que poserior a la creacion se guarde la marca
+         '''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
+        IdControl=int(IdControl)
+        IdCuarto=int(IdCuarto)
+        IdDisp=int(IdDisp)
+        Pin=int(Pin)
         if OpControl().BuscarControl(IdControl) == 0 :
                 if OpCuarto().buscaridcuarto(IdCuarto):
                     if Dispositivo == "Rasp":
@@ -1626,22 +2035,29 @@ class OpControl:
                             if OpRasp().PinLibre(IdDisp,Pin) == True:
                                 if (OpMarcaControl().BuscarMarcaNombre(Marca) ==0 ):
 
-                                    if Guardar and Marca != "":
-                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{})
-                                        OpMarcaControl().InsertarMarca(Marca,{})
+                                    if Guardar==True and Marca != "":
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
+                                        OpMarcaControl().InsertarMarca(Marca,{},False)
                                         coleccion.insert_one(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
+                                        OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                     else:
-                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
                                         coleccion.insert_one(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
+                                        
+                                        OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                 else :
                                     cods=OpMarcaControl().DevolverCodigos(Marca)
-                                    control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods)
+                                    if Guardar:
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
                                     coleccion.insert_one(control.toDBCollection())
                                     OpCuarto().agregarDisp(IdCuarto)
+                                    OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                                     return ("Completado")
                             else :
                                 return ("Pin Ocupado")
@@ -1653,28 +2069,66 @@ class OpControl:
                             if OpNode().PinLibre(IdDisp,Pin) == True:
                                 if (OpMarcaControl().BuscarMarcaNombre(Marca) ==0 ):
 
-                                    if Guardar and Marca != "":
-                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{})
-                                        OpMarcaControl().InsertarMarca(Marca,{})
+                                    if Guardar==True and Marca != "":
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
+                                        OpMarcaControl().InsertarMarca(Marca,{},False)
                                         coleccion.insert_one(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
+                                        OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                     else:
-                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{})
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
                                         coleccion.insert_one(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
+                                        OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                 else :
                                     cods=OpMarcaControl().DevolverCodigos(Marca)
-                                    control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods)
+                                    if Guardar:
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
                                     coleccion.insert_one(control.toDBCollection())
                                     OpCuarto().agregarDisp(IdCuarto)
+                                    OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                     return ("Completado")
                             else :
                                 return ("Pin Ocupado")
                         else: 
                             return ("No existe Node")
-                    if Dispositivo != "Rasp" and Dispositivo != "Node":
+                    if Dispositivo == "Esp32":
+                        if OpEsp32().buscarEsp32(IdDisp) == True:
+                            if OpEsp32().PinLibre(IdDisp,Pin) == True:
+                                if (OpMarcaControl().BuscarMarcaNombre(Marca) ==0 ):
+
+                                    if Guardar==True and Marca != "":
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
+                                        OpMarcaControl().InsertarMarca(Marca,{},False)
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
+                                        return ("Completado")
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
+                                        coleccion.insert_one(control.toDBCollection())
+                                        OpCuarto().agregarDisp(IdCuarto)
+                                        OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
+                                        return ("Completado")
+                                else :
+                                    cods=OpMarcaControl().DevolverCodigos(Marca)
+                                    if Guardar:
+                                        control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
+                                    else:
+                                        control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
+                                    coleccion.insert_one(control.toDBCollection())
+                                    OpCuarto().agregarDisp(IdCuarto)
+                                    OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
+                                    return ("Completado")
+                            else :
+                                return ("Pin Ocupado")
+                        else: 
+                            return ("No existe Node")
+                    if Dispositivo != "Rasp" and Dispositivo != "Node" and Dispositivo != "Esp32":
                         return("Error de Dispositivo")
 
                 else:
@@ -1683,14 +2137,17 @@ class OpControl:
             return ("Existe Control con este ID")
     
     def AddCodigo (self, IdControl, Codigo , Valor):
-        # si la  marca es dif ded "" entonces lo anahdes a la marca
+        '''adicionas el codigo del control y marca si no es de sistema , el codigo se refiere a nombre del codigo es decir ej OFF y valor con el codigo HEXADECIMAL'''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
+        IdControl=int(IdControl)
         M=OpControl().BuscarControl(IdControl)
+        marc=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
         if  M!= 0:
+            
             New=M["Codigos"]
             New.update({str(Codigo):Valor})
-            if M["Marca"] != "":
+            if M["Marca"] != "" and marc["Sistema"] != True:
                 coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":New}},multi=True)
                 OpMarcaControl().AddCodigo(M["Marca"],Codigo,Valor)
                 return ("Codigo Agregado")
@@ -1700,28 +2157,40 @@ class OpControl:
         else:
             return ("No existe Control con este ID")
     def BorrarCodigo (self, IdControl, Codigo ):
-        # si la  marca es dif ded "" entonces lo Borras a la marca
+        '''Borras el codigo del control y marca si no es de sistema , el codigo se refiere a nombre del codigo es decir ej OFF'''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
         M=OpControl().BuscarControl(IdControl)
+        IdControl=int(IdControl)
+        marc=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
         if  M!= 0:
             New=M["Codigos"]
-            del New[str(Codigo)]
-            if M["Marca"] != "":
-                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":New}})
-                OpMarcaControl().BorrarCodigo(M["Marca"],Codigo)
-                return ("Codigo Borrado")
-            else:
-                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":New}})
-                return ("Codigo Borrado")
+            if Codigo in New:
+                del New[str(Codigo)]
+                
+                if M["Marca"] != "" and marc["Sistema"] != True: 
+                    coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":New}},multi=True)
+                    OpMarcaControl().BorrarCodigoM(M["Marca"],Codigo)
+                    return ("Codigo Borrado")
+                else:
+                    
+                    print(coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":New}},multi=True),'  IdControl: ',IdControl,"cODIGOS ",New)
+                    return ("Codigo Borrado")
+            else :
+                return ("No existe Codigo")
         else:
             return ("No existe Control con este ID")
     def UpdateCodigos(self , IdControl,Codigo):
+        '''U pdateas todos los codigos cambias todo , tambien en la marca si estan juntas y si no es de sistema'''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
+        IdControl=int(IdControl)
         M=OpControl().BuscarControl(IdControl)
+        marc=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
+        
         if  M!= 0:
-            if M["Marca"] != "":
+
+            if M["Marca"] != ""  and marc["Sistema"] != True:
                 coleccion.update({"IdControl":IdControl},{"$Set":{"Codigos":Codigo}})
                 OpMarcaControl().ActualizarCodigos(M["Marca"],Codigo)
                 return ("Codigos Agregado")
@@ -1733,18 +2202,22 @@ class OpControl:
         # si la  marca es dif ded "" entonces lo anahdes a la marca
 
     def ElimnarControl(self , IdControl,MarcaToo):
-        #Necesitas borrar del disposiivo y del cuarto 
+        '''Eliminas el Control , si el Parametro MarcaTOO es true entonces tambien borra la marca siempre y cuando la marca no sea de sistema '''
         db = cliente[NombreBase]
+        IdControl=int(IdControl)
         coleccion=db[self.CollectionName] 
         M=OpControl().BuscarControl(IdControl)
+        marcs=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
         if  M!= 0:
             OpCuarto().RestDisp (M["IdCuarto"])
             if M["Dispositivo"]=="Rasp":
                 OpRasp().BorrarPinOcupadoRasp(M["IdDisp"],M["Pin"])
             if M["Dispositivo"]=="Node":
                 OpNode().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"],0)
+            if M["Dispositivo"]=="Esp32":
+                OpEsp32().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"])
             if M["Marca"] != "":
-                if MarcaToo == True:
+                if MarcaToo == True and marcs["Sistema"]!=True:
                     OpMarcaControl().EliminarMarca(M["Marca"])
                 
                 coleccion.delete_one({"IdControl":IdControl})
@@ -1757,7 +2230,9 @@ class OpControl:
             return ("No existe Control con este ID")
             
     def ModificarControl(self , IdControl,Parametro,Valor):
+        ''' Modificas parametros del control como ejemplo el nommbre o el pin , para codigos y marcas utilizar el adicionar o borrar codigo , para dispositvios o id eliminar todo  '''
         db = cliente[NombreBase]
+        IdControl=int(IdControl)
         coleccion=db[self.CollectionName] 
         M=OpControl().BuscarControl(IdControl)
         if  M!= 0:
@@ -1785,21 +2260,32 @@ class OpControl:
                         return ("Complete")
                     else:
                         return ("Valor de Pin Usado")
+                if M["Dispositivo"] == "Esp32":
+                    if OpEsp32().PinLibre(M["IdDisp"],Valor) == True:
+                        OpEsp32().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"])
+                        OpEsp32().AddPinOcupadoNode(M["IdDisp"],Valor,"IN")
+                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        return ("Complete")
+                    else:
+                        return ("Valor de Pin Usado")
 
-            if Parametro == "Nombre":
+            else:
                 Valor = str(Valor)
                 coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
                 return ("Complete")
         else:
             return ("No existe Control con este ID")
     def BorrarTodosCodigos(self,IdControl,MarcaToo):
+        '''Borras todos los codigos del control y marca si el parametro Marcatoo es true y  la marca no es de sistema'''
         db = cliente[NombreBase]
+        IdControl=int(IdControl)
         coleccion=db[self.CollectionName] 
         M=OpControl().BuscarControl(IdControl)
+        marcs=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
         if  M!= 0:
 
             if M["Marca"] != "":
-                if MarcaToo == True:
+                if MarcaToo == True and marcs["Sistema"] != True:
                     OpMarcaControl().BorrarTodosCodigos(M["Marca"])
                 coleccion.update__one({"IdControl":IdControl},{"$set":{"Codigos":{}}})
                 
@@ -1811,6 +2297,7 @@ class OpControl:
             return ("No existe Control con este ID")
     
     def RegistrarMarca(self,IdControl,Marca):
+        """registras Marca en algun momento  siempre y cuado no exista """
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
         M=OpControl().BuscarControl(IdControl)
@@ -1818,7 +2305,7 @@ class OpControl:
             if M["Marca"]=="":
                 if OpMarcaControl().BuscarMarcaNombre(Marca) == 0:
                     coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":Marca}})
-                    OpMarcaControl().InsertarMarca(Marca,M["Codigos"])
+                    OpMarcaControl().InsertarMarca(Marca,M["Codigos"],False)
                 else:
                     return ("Marca ya existe cambie el nombre")
                 
@@ -1826,7 +2313,53 @@ class OpControl:
                 return ("Ya se Registro Marca")
         else:
             return ("No existe Control con este ID")
+    def CopiarMarca(self,IdControl,Marca):
+        """copia Marca en algun momento  a control """
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        print("debugeuandoooooooooooooo",Marca)
+        if  M!= 0:
+            if Marca!="":
+                if OpMarcaControl().BuscarMarcaNombre(Marca) != 0:
+                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":Marca}})
+                    marc=OpMarcaControl().BuscarMarcaNombre(Marca)
+                    coleccion.update_many({"IdControl":IdControl},{"$set":{"Codigos":marc["Codigos"]}})
+                    return ("Complete")
+                else:
+                    return ("Marca no existe cambie el nombre")
+                
+            else:
+                return ("Ya se Registro Marca o marca invalida")
+        else:
+            return ("No existe Control con este ID")
+    def EliminarMarcaControl(self,IdControl):
+        """registras Marca en algun momento  siempre y cuado no exista """
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName] 
+        M=OpControl().BuscarControl(IdControl)
+        if  M!= 0:
+            
+                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":""}})
+            
+                
 
+        else:
+            return ("No existe Control con este ID")
+    def LastID(self):
+        """devuelve el ultimo Id registrado , sino se registraron devuelve -1"""
+        db = cliente[NombreBase]
+        lecs=OpControl().MostrarControles()
+        
+        if (lecs == "No Existen"):
+            print ("No Existen")
+            return (-1)
+        else :
+            
+
+            tam=len(lecs["IdControl"])
+            # print (" el id es :" ,lecs["IdLec"][tam-1])
+            return lecs["IdControl"][tam-1]
 class OpMarcaControl:
     def __init__ (self):
         self.CollectionName="MarcaControl"
@@ -1856,11 +2389,12 @@ class OpMarcaControl:
             return vaca
         if encontro==0:
             return 0
-    def InsertarMarca(self,Marca,Codigos):
+    def InsertarMarca(self,Marca,Codigos,Sistema):
+        '''si sistema true no se pude borrar con el control ''' 
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         if OpMarcaControl().BuscarMarcaNombre(Marca) == 0 :
-            cua=MarcasControles(Marca,Codigos)
+            cua=MarcasControles(Marca,Codigos,Sistema)
             coleccion.insert_one(cua.toDBCollection())
             return ("Completado")
 
@@ -1882,7 +2416,7 @@ class OpMarcaControl:
             return ("Complete")
         else:
             return("No existe Marca")
-    def BorrarCodigo(self,Marca,Codigo):
+    def BorrarCodigoM(self,Marca,Codigo):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         if OpMarcaControl().BuscarMarcaNombre != 0 :
@@ -1955,7 +2489,7 @@ class OpLecIR:
         if auxdict :
             return auxdict
         else:
-            return "No Existen Luces"
+            return "No Existen"
     def InsertarLector(self,IdLec,IdDisp,IdCasa,Dispositivo,Pin):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -1966,24 +2500,36 @@ class OpLecIR:
                         if OpRasp().PinLibre(IdDisp,Pin):
                             L=LecIR(IdLec,IdDisp,IdCasa,Dispositivo,Pin,"")
                             
-                            OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"IN")
+                            OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                         else:
                             return ("Pin Ocupado")
                     else:
                         return ("No existe ID de Rasp")
                 if Dispositivo == "Node":
                     if OpNode().buscarNode(IdDisp) !=0:
+                        
                         if OpNode().PinLibre(IdDisp,Pin):
+                            
                             L=LecIR(IdLec,IdDisp,IdCasa,Dispositivo,Pin,"")
                             
-                            OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"IN")
+                            OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                         else:
                             return ("Pin Ocupado")
                     else:
                         return ("No existe ID de Node")
+                if Dispositivo == "Esp32":
+                    if OpEsp32().buscarEsp32(IdDisp) !=0:
+                        if OpEsp32().PinLibre(IdDisp,Pin):
+                            L=LecIR(IdLec,IdDisp,IdCasa,Dispositivo,Pin,"")
+                            
+                            OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
+                        else:
+                            return ("Pin Ocupado")
+                    else:
+                        return ("No existe ID de Esp32")        
                 coleccion.insert_one(L.toDBCollection())
                 OpCasa().agregarDisp(IdCasa)
-                return ("Completado")
+                return ("Lector Agregado Satisfactoriamente")
             else:
                 return ("Erro No Existe Cuarto")
         else :
@@ -1991,15 +2537,18 @@ class OpLecIR:
     def EliminarLector(self,IdLec):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
+        IdLec=int (IdLec)
         if OpLecIR().BuscarLector(IdLec) != 0:
-            for vaca in coleccion.find({ "IdLec": id },{ "_id": 0}):
+            for vaca in coleccion.find({ "IdLec": IdLec },{ "_id": 0}):
                 print (vaca)
 
             if vaca["Dispositivo"] == "Rasp":
                 OpRasp().BorrarPinOcupadoRasp(vaca["IdDisp"],vaca["Pin"])
             if vaca["Dispositivo"] == "Node":
                 OpNode().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"],0)
-            coleccion.delete_one({ "IdLec": id })
+            if vaca["Dispositivo"] == "Esp32":
+                OpEsp32().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"])
+            coleccion.delete_one({ "IdLec": IdLec })
             return ("Complete")
         else:
             return("No exise Lector con ese ID")
@@ -2019,6 +2568,20 @@ class OpLecIR:
             return val["LastData"]
         else :
             return ("Error ID no existe")
+    def LastID(self):
+        db = cliente[NombreBase]
+        lecs=OpLecIR().MostrarControles()
+        if (lecs == "No Existen"):
+            print ("No Existen")
+            return ("No Existen")
+        else :
+            
+
+            tam=len(lecs["IdLec"])
+            # print (" el id es :" ,lecs["IdLec"][tam-1])
+            return lecs["IdLec"][tam-1]
+
+
 
 # class oOSonos:,class OpRF:,class OpControl:,class OpTemp:,  FALTA TODO ESTO 
 
@@ -2032,7 +2595,9 @@ class OpLecIR:
 # print (OpControl().ElimnarControl(2,True))
 # print (OpControl().BorrarCodigo(1,"prechanel"))
 # print (OpControl().BorrarTodosCodigos(2,True))
-
+# with open('MarcasSis.json') as file:
+#      MarcSis = json.load(file)
+# OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
 # print (OpLecIR().InsertarLector(1,1,1,"Rasp",9))
 # OpCasa().insertarCasa(1,"Gabo",124.11)
 # OpRasp().InsertarRasp(1,1,16,16,[1,0,4,5,6,7])
@@ -2040,7 +2605,7 @@ class OpLecIR:
 # OpInterruptor().insertarInterruptor(1,1,"IoT",1,5,"No","principal")
 
 # OpCortina().insertarCortina(1,1,1,"IoT",4,6,9,"Roller","Derecha")
-
+# print (OpInterruptor().LastID())
 # OpCortina().EliminarCortina(1)
 # # OpInterruptor().EliminarInterruptor(1)
 # print (OpInterruptor().modInterruptor(1,"Pin",0))
@@ -2050,6 +2615,6 @@ class OpLecIR:
 
 
 
-
+# OpControl().BorrarTodosCodigos(0,False)
 
 #solo faltaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  radio control , ventana , infrarojos , database de infrarojos ,sensor temp,etc

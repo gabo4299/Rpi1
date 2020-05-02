@@ -1,0 +1,26 @@
+
+{
+    "Samsung":
+        {
+            "Apagar":"0xE0E040BF",
+            "PreChanel":"0xE0E0C837",
+            "VolUp":"0xE0E0E01F",
+            "VolDown":"0xE0E0D02F",
+            "Mute":"0xE0E0F00F",
+            "Source":"0xE0E0807F",
+            "ChUp":"0xE0E048B7",
+            "ChDown":"0xE0E008F7",
+            "Smart Hub":"0xE0E09E61" ,
+            "Menu":"0xE0E058A7",
+            "Return":"0xE0E01AE5" ,
+            "Tools":"0xE0E0D22D",
+            "Ok":"0xE0E016E9",
+            "Up":"0xE0E006F9",
+            "Down":"0xE0E08679",
+            "Left":"0xE0E0A659",
+            "Right":"0xE0E046B9",
+            "Sleep":"0xE0E0C03F "          
+
+        }
+        
+}

@@ -27,7 +27,7 @@ import subprocess
 import array
 from eventlet import tpool
 from Base import Cortina,Cuarto,Interruptor
-from Operaciones import OpCortina,OpCuarto,OpInterruptor,Pines
+from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
 from flask_cors import CORS, cross_origin
 #instalar uploader filename
 import os
@@ -79,13 +79,64 @@ def imprimirsi():
     else:
         print ("ok")
 
+##############################  Casa#########################
+@app.route('/API/Casa')
+def Casas():
+    js = jsonify(OpCasa().MostrarCasas())
+    return js 
+
+@app.route('/API/Casa/ID')
+def casasID():
+    print (OpCasa().MostrarIds())
+    js = jsonify(OpCuarto().MostrarIds())
+    return js 
+
+@app.route('/API/Casa/<string:idcasa>')
+def apiCasa(idcasa):
+    if (OpCasa().buscaridcasa(idcasa)== True):
+        idcasa=int(idcasa)
+        aux=OpCasa().MostrarCasaEsp(idcasa)        
+        return jsonify(aux)
+    else:
+        return ("No Existe Casa")
+
+@app.route('/API/Casa/add' , methods=['POST'])
+def addCasa():
+    a=OpCasa().insertarCasa(request.json["IdCasa"],request.json["Nombre"],"")
+    return (a)
+
+@app.route('/API/Casa/<string:idcasa>/del' , methods=['DELETE'])
+def delCasa(idcasa):
+    if OpCasa().buscaridcasa(idcasa)==True:
+        idcasa=int(idcasa)
+
+        
+        return OpCasa().eliminarCasa(idcasa)
+    else :
+        return('no existe id ')
+
+@app.route('/API/Casa/<string:idcuarto>/mod' , methods=['PUT'])
+def modCasa(idcuarto):
+    
+    if OpCasa().buscaridcasa(idcuarto)==True:
+        idcuarto=int(idcuarto)
+        
+   
+        if request.form["Nombre"]!='' and request.form["Nombre"]!=' ':
+            return (OpCasa().modificarCasa(idcuarto,"Nombre",request.form["Nombre"]))
+        if request.form["Ports"]!='' and request.form["Ports"]!=' ':
+            return (OpCasa().modificarCasa(idcuarto,"Ports",request.form["Ports"]))
+        if request.form["Ip"]!='' and request.form["Ip"]!=' ':
+            return (OpCasa().modificarCasa(idcuarto,"Ip",request.form["Ip"]))
+
+
 
 ##################### Cuartos###################
 
 
 @app.route('/API/Cuartos')
 def cuartos():
-    print (OpCuarto().MostrarCuartos())
+    # print (OpCuarto().MostrarCuartos())
     js = jsonify(OpCuarto().MostrarCuartos())
     
     return js 
@@ -148,9 +199,9 @@ def add():
                             f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
                             ruta=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
                             ruta=ruta+request.form["nombre"]+".jpg"
-                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form['nombre'],ruta,request.form['contrasenha'])
+                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha'])
                 else:
-                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form['nombre'],'No',request.form['contrasenha'])
+                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha'])
 
             else:
                 
@@ -291,27 +342,34 @@ def estadoLuz(idcuarto,idluz):
     
     if aux!=0:
         if request.method == "POST":
-            
-            if request.json['Estado']== 1 or request.json['Estado']=='Encendido':
-                OpInterruptor().modidificarEstadoiNT(idluz,'Encendido')
-                ####funcion cambio de luz de idluz a encender
-                socketio.emit('LuzCambio', (int(idluz),"Encendido"))
-                
-                
-                tpool.execute(imprimirsi)
-                # imprimirsi()
-                # print ("Encendido luz ",idluz,"gracias")
-                msg ="Encendido luz"  +str (idluz)+"gracias"
-                return (msg)
-            else:
-                if request.json['Estado']== 0 or request.json['Estado']=='Apagado':
-                    OpInterruptor().modidificarEstadoiNT(idluz,'Apagado')
-                    imprimirsi()
-                    socketio.emit('LuzCambio', (int(idluz),"Apagado"))
-                    msg ="Apagando luz"  + str(idluz)+"gracias"
+            if aux["Dimmer"] == False:
+                if request.json['Estado']== 1 or request.json['Estado']=='Encendido':
+                    OpInterruptor().modidificarEstadoiNT(idluz,'Encendido')
+                    ####funcion cambio de luz de idluz a encender
+                    socketio.emit('LuzCambio', (int(idluz),"Encendido"))
+                    
+                    
+                    # tpool.execute(imprimirsi)
+                    # imprimirsi()
+                    # print ("Encendido luz ",idluz,"gracias")
+                    msg ="Encendido luz"  +str (idluz)+"gracias"
                     return (msg)
                 else:
-                    return("negativo")
+                    if request.json['Estado']== 0 or request.json['Estado']=='Apagado':
+                        OpInterruptor().modidificarEstadoiNT(idluz,'Apagado')
+                        # imprimirsi()
+                        socketio.emit('LuzCambio', (int(idluz),"Apagado"))
+                        msg ="Apagando luz"  + str(idluz)+"gracias"
+                        return (msg)
+                    else:
+                        return("negativo")
+            else:
+                        OpInterruptor().modidificarEstadoiNT(idluz,request.json['Estado'])
+                        # con t pool tendras que encender :V 
+                        socketio.emit('LuzCambio', (int(idluz),request.json['Estado']))
+                        msg ="Dimmeando luz id: "  + str(idluz)+" al :",str(request.json["Estado"]) +"'%' gracias"
+                        print (msg) 
+                        return ("Complete")
         else:
             if request.method== "GET":
                 a=OpInterruptor().buscarIdInterruptor(idluz)
@@ -330,9 +388,11 @@ def addI(idcuarto):
     idcuarto=int(idcuarto)
     
     
-    print (request.json)
+    # print (request.json)
+    ids = OpInterruptor().LastID() +1
     if (OpCuarto().buscaridcuarto(idcuarto)== True) :
-         a=OpInterruptor().insertarInterruptor(request.json["IdInterruptor"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
+
+         a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
 
          return (a)
     else:
@@ -345,20 +405,23 @@ def modI(idcuarto,idLuz):
     if (OpCuarto().buscaridcuarto(idcuarto)== True):
         aux=OpInterruptor().buscarIdInterruptor(idLuz)
         jsonify(aux)
+        cont=0
+        mesg=""
         if aux!=0:
 
-            if request.json["IdCuarto"] != '' and request.json["IdCuarto"] != ' ':
-                OpInterruptor().modInterruptor(idLuz,"IdCuarto",request.json["IdCuarto"])
             if request.json["Pin"] != '' and request.json["Pin"] != ' ':
-                OpInterruptor().modInterruptor(idLuz,"Pin",request.json["Pin"])
-            if request.json["Dimmer"] != '' and request.json["Dimmer"] != ' ':
-                OpInterruptor().modInterruptor(idLuz,"Dimmer",request.json["Dimmer"])
-            if request.json["IdInterruptor"] != '' and request.json["IdInterruptor"] != ' ':
-                OpInterruptor().modInterruptor(idLuz,"IdInterruptor",request.json["IdInterruptor"])
+                cont = cont +1
+                mesg=mesg+" Se cambio el Pin : " + OpInterruptor().modInterruptor(idLuz,"Pin",request.json["Pin"])
+                
             if request.json["Nombre"] != '' and request.json["Nombre"] != ' ':
-                OpInterruptor().modInterruptor(idLuz,"Nombre",request.json["Nombre"])
+                cont = cont +1
+                mesg=mesg+" Se cambio el Nombre : " +   OpInterruptor().modInterruptor(idLuz,"Nombre",request.json["Nombre"])
+            if cont == 0 : 
+                return ( "No se realizaron Modificaciones")
+            else :
+                last_mes= "Se realizaron "+str(cont)+" Modificaciones , " + mesg
+                return (last_mes)
             
-            return("Completado")
 
             
         else:
@@ -411,8 +474,9 @@ def ApiCortina(IdCortina,idcuarto):
 def addcor(idcuarto):
     if OpCuarto().buscaridcuarto(idcuarto)==True:
         idcuarto=int(idcuarto)
-        print (request.json)
-        b=OpCortina().insertarCortina(request.json["IdCortina"],idcuarto,request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
+        idcort=OpCortina().LastID() +1
+        # print (request.json)
+        b=OpCortina().insertarCortina(idcort,idcuarto,request.json["IdDisp"],request.json["Dispositivo"],request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
         return (b)
     else :
         return('no existe id de caurto ')
@@ -436,24 +500,37 @@ def delCor(idcuarto,IdCortina) :
 def modcor(idcuarto,IdCortina):
         if OpCuarto().buscaridcuarto(idcuarto)==True:
             idcuarto=int(idcuarto)
+            mesaggeReturn=""
+            cont = 0
             if request.json["Nombre"]!='' and request.json["Nombre"]!=' ':
-                OpCortina().modcortina(IdCortina,"Nombre",request.json["Nombre"])   
-            if request.json["IdCuarto"]!='' and request.json["IdCuarto"]!=' ':
-                OpCortina().modcortina(IdCortina,"IdCuarto",request.json["IdCuarto"])
+                cont=cont +1
+                mesaggeReturn=mesaggeReturn+ " Se cambio el nombre: " + OpCortina().modcortina(int(IdCortina),"Nombre",request.json["Nombre"])
+                
 
             if request.json["Pinmotor"]!='' and request.json["Pinmotor"]!=' ':
-                OpCortina().modcortina(IdCortina,"Pinmotor",request.json["Pinmotor"])
+                cont=cont +1
+                mesaggeReturn=mesaggeReturn+ ", Se cambio el Pin del Motor: " + OpCortina().modcortina(IdCortina,"Pinmotor",request.json["Pinmotor"])
+                
             if request.json["PinSensor1"]!='' and request.json["PinSensor1"]!=' ':
-                OpCortina().modcortina(IdCortina,"PinSensor1",request.json["PinSensor1"])
+                cont=cont +1
+                mesaggeReturn=mesaggeReturn+ ", Se cambio el Pin del Sensor 1: " + OpCortina().modcortina(IdCortina,"PinSensor1",request.json["PinSensor1"])
+                
             if request.json["PinSensor2"]!='' and request.json["PinSensor2"]!=' ':
-                OpCortina().modcortina(IdCortina,"PinSensor2",request.json["PinSensor2"])                                
+                cont=cont +1
+                mesaggeReturn=mesaggeReturn+ ", Se cambio el Pin del Sensor 2: " + OpCortina().modcortina(IdCortina,"PinSensor2",request.json["PinSensor2"])                                
+                
             if request.json["Tipo"]!='' and request.json["Tipo"]!=' ':
-                OpCortina().modcortina(IdCortina,"Tipo",request.json["Tipo"]) 
-            if request.json["IdCortina"]!='' and request.json["IdCortina"]!=' ':
-                OpCortina().modcortina(IdCortina,"IdCortina",request.json["IdCortina"])   
+                cont=cont +1
+                mesaggeReturn=mesaggeReturn+ ", Se cambio el Pin del Sensor 2: " + OpCortina().modcortina(IdCortina,"Tipo",request.json["Tipo"]) 
+                
+            if cont == 0 :
+                return ("No se realizaron Modificaciones")
 
+            else:
+                el_utlimo="Se realizaron " + str(cont) +" Modificaciones "+mesaggeReturn
+                return (el_utlimo)
 
-            return "completado"
+            
 
         else:
            return 'No existe el caurto con el id '
@@ -508,62 +585,324 @@ def estadocor(idcuarto,IdCortina):
         return ("NO EXISTE ID DE CUARTO")
 
 
+##########3###############################Controlador Mcu#########################
+@app.route('/API/CPU/<string:Disp>/<string:id>')
+def delvolverDispositvo(Disp,id):
+    if Disp == "Node":
 
-#####################################Pines libre ###########################
-@app.route('/API/PinCor')
-def PinesCor():
-    pineslibres={}
-    cont=0
-    for x in range (1,17) :
-        if Pines().BuscarPinMoto(x):
-            pass
-        else:
-            pineslibres[cont]=x
-            cont=cont+1
+        js = jsonify(OpNode().MostrarNodeEsp(int(id)))
+        return js 
+    if Disp == "Rasp":
+        js = jsonify(OpRasp().MostrarRaspEsp(int(id)))
+        return js 
+    if Disp == "Esp32":
+        js = jsonify(OpEsp32().MostrarESP32Esp(int(id)))
+        return js 
+    if Disp == "IoTs":
+        js = jsonify(OpEsp32().MostrarESP32Esp(int(id)))
+        return js 
+    else :
+        return ("Error de Dispositvo")
+
+@app.route('/API/CPU/Node/<string:id>/conf')
+def ConfNode(id):
+    if OpNode().buscarNode(int(id)):
+        # enviar con paho y escuchar si es necesario
+        print  ("OK")
+    else:
+        return ("No se registro Node")
+@app.route('/API/CPU/Esp32/<string:id>/conf')
+def ConfEsp32(id):
+    if OpEsp32().buscarEsp32(int(id)):
+        # enviar con paho y escuchar si es necesario
+        print  ("OK")
+    else:
+        return ("No se registro Node")
+@app.route('/API/CPU/<string:Disp>' )
+def Dispst(Disp):
+    if Disp == "Rasps":
+        
+        js = jsonify( OpRasp().MostrarRasps())
+        return (js)
+    else :
+        if Disp == "Nodes":
+            if OpNode().MostrarNodes() != {}:
+                js=jsonify(OpNode().MostrarNodes())
+                print ("Debugueannnnnnnnnnnnndo",js)
+                return (js)
+            else :
+                return "No se registraron"
+        if Disp == "Esp32s":
+            if OpEsp32().MostrarEsp32s != {}:
+                js=jsonify(OpEsp32().MostrarEsp32s())
+                print ("Debugueannnnnnnnnnnnndo",js)
+                return (js)
+            else :
+                return "No se registraron"
             
-    print (pineslibres)
-    return (jsonify( pineslibres))
-@app.route('/API/PinSen1')
-def PinesSen1():
-    pineslibres={}
-    cont=0
-    for x in range (1,17) :
-        if Pines().BuscarPinSensor1(x):
-            pass
-        else:
-            pineslibres[cont]=x
-            cont=cont+1
-            
-    print (pineslibres)
-    return (jsonify( pineslibres))
-@app.route('/API/PinSen2')
-def PinesSen2():
-    pineslibres={}
-    cont=0
-    for x in range (1,17) :
-        if Pines().BuscarPinSensor2(x):
-            pass
-        else:
-            pineslibres[cont]=x
-            cont=cont+1
-            
-    print (pineslibres)
-    return (jsonify(pineslibres))
-@app.route('/API/PinInt')
-def PinesInt():
-    pineslibres={}
-    cont=0
-    for x in range (1,17) :
-        if Pines().BuscarPinInt(x):
-            pass
-        else:
-            pineslibres[cont]=x
-            cont=cont+1
-            
-    print (pineslibres)
-    return (jsonify( pineslibres))
+
+@app.route('/API/CPU/<string:Disp>/add' , methods=['POST'])
+def addDisp(Disp):
+    val=request.json
+    if Disp == "Rasp":
+        
+        
+        return (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
+    if Disp == "Node":
+        js = (OpNode().InsertarNode(int(val["IdNode"]),int (val["IdCasa"]),val["Descripcion"]))
+        return (js)
+    if Disp == "Esp32":
+        js = (OpEsp32().InsertarEsp32(int(val["IdEsp32"]),int (val["IdCasa"]),val["Descripcion"]))
+        return (js)
+    else:
+        return ("Error")
+    
 
 
+        
+
+@app.route('/API/CPU/<string:Disp>/<string:id>/del' , methods=['DELETE'])
+def delDisp(Disp,id):
+    id = int (id)
+    if Disp == "Rasp":
+        if OpRasp().buscarRasp(id):
+            return (OpRasp().ElmiminarRasp(id))
+        else :
+            return('no existe id ')
+    if Disp == "Node":
+        if OpNode().buscarNode(id):
+            return (OpNode().ElmiminarNode(id))
+        else :
+            return('no existe id ')
+    if Disp == "Esp32":
+        if OpEsp32().buscarEsp32(id):
+            return (OpEsp32().EliminarEsp32(id))
+        else :
+            return('no existe id ')
+    return("Error Dispositivo")
+
+@app.route('/API/CPU/<string:Disp>/<string:id>/PinFree/<string:tipo>')
+def PinsLibres(Disp,id,tipo):
+    id = int (id)
+    if Disp == "Rasp":
+        if OpRasp().buscarRasp(id):
+            return ( jsonify(OpRasp().DevolverPinsLibres(id)) )
+        else :
+            return('no existe id')
+    if Disp == "Node":
+
+        if OpNode().buscarNode(id):
+            if tipo =="analog":
+                return (jsonify(OpNode().devolverAnalogicoLibre(id)))
+            else:
+
+                return jsonify(OpNode().DevolverPinsLibres(id))
+        else :
+            return('no existe id')
+    if Disp == "IoT":
+        if OpRasp().ComprobarIoT(id):
+            if tipo == "PWM":
+                return (jsonify(OpRasp().DevolverPinIoT(id,"PWM")))
+            if tipo == "Luz":
+                return (jsonify(OpRasp().DevolverPinIoT(id,"L")))
+            if tipo =="Sen":
+                return (jsonify(OpRasp().DevolverPinIoT(id,"S")))
+            
+        else :
+            return('no existe id')
+    if Disp == "Esp32":
+        if OpEsp32().buscarEsp32(id):
+            return (jsonify(OpEsp32().DevolverPinsLibres(id)))
+        else :
+            return('no existe id')
+
+
+#######################################LecIR###################################33
+@app.route('/API/LecIR/add' , methods=["POST"])
+def addLecIR():
+    val=request.json
+    #idlec autoincrementable#iddisp elegis #idcasa 1 #disp elegis # pin lista
+    if val["Dispositivo"] != "Rasp" and val["Dispositivo"] != "Node" and val["Dispositivo"] != "Esp32":
+        return ("Error Dispositivo No valido")
+        
+    else:
+        id=OpLecIR().LastID()
+        if id == "No Existen":
+            id=0
+            if val["Dispositivo"]=="Node":
+                
+                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+            else:
+                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
+        else :
+            id=id+1
+            if val["Dispositivo"]=="Node":
+                
+                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+            else:
+                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
+        
+    
+    
+
+@app.route('/API/LecIR/<string:id>')
+def getLecIR(id):
+    lec=OpLecIR().BuscarLector(int(id))
+    if lec == 0 :
+        return ("No existe Lector con este ID")
+    else :
+        return jsonify(lec)
+
+@app.route('/API/LecIR/<string:id>/del' , methods=["DELETE"])
+def delLecIR(id):
+    return jsonify(OpLecIR().EliminarLector(int (id)))
+
+@app.route('/API/LecIRS' )
+def LecIRS():
+    return (jsonify(OpLecIR().MostrarControles()))
+
+
+@app.route('/API/LecIR/<string:id>/data')
+def leerIR(id):
+    print ("necesitas hacer para leer este en x dispositivo  y q te retorne el dato ! ")
+
+#######################################Control y Marca##########################
+@app.route('/API/ControlIR/add' , methods=["POST"])
+def addConrolIR():      
+    val=request.json
+    IdControl=OpControl().LastID()+1
+    
+    if (val["Guardar"] == False or val["Guardar"] == "False"):
+        
+        return (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],False,val["Tipo"]))
+    else:
+        return (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],True,val["Tipo"]))
+
+@app.route('/API/ControlIR/<string:id>')
+def getConrolIR(id):
+    lec=OpControl().BuscarControl(int(id))
+    if lec == 0 :
+        return ("No existe Lector con este ID")
+    else :
+        return jsonify(lec)
+
+
+@app.route('/API/ControlIR/<string:id>/copyMarca' ,methods=["POST"])
+def AsociarMarca(id):
+    lec=OpControl().BuscarControl(int(id))
+    data=request.json
+    if lec == 0 :
+        return ("No existe Lector con este ID")
+    else :
+        return OpControl().CopiarMarca(int(id),data["Marca"])
+        
+
+@app.route('/API/Controles')
+def getAllLecIR():
+    
+    return jsonify(OpControl().MostrarControles())
+@app.route('/API/Marca')
+def getMarcas():
+    return jsonify(OpMarcaControl().MostrarMarcas())
+
+
+
+@app.route('/API/Marca/<string:name>')
+def getMarca(name):
+    return (OpMarcaControl().BuscarMarcaNombre(name))
+
+@app.route('/API/ControlIR/<string:id>/<string:Marc>/del' , methods=["DELETE"])
+def delConrolIR(id,Marc):
+    if int(Marc)==1:
+        return (OpControl().ElimnarControl(int (id),True))
+    else:
+        if int(Marc)==0:
+            return (OpControl().ElimnarControl(int (id),False))
+    
+@app.route('/API/ControlIR/<string:id>/mod',methods=["PUT"])
+def ModControl(id):
+    control =OpControl().BuscarControl(int(id))
+    data=request.json
+    cont = 0 
+    mes1 = ""
+    if control!=0:
+        if data["Nombre"] != "" and data["Nombre"] != " "  :
+            s=OpControl().ModificarControl(int(id),"Nombre",data["Nombre"])
+            cont = cont +1
+            mes1=mes1+" Nombre :"+s
+        if data["Tipo"] != "" and data["Tipo"] != " " :
+            a=OpControl().ModificarControl(int(id),"Tipo",data["Tipo"])
+            cont = cont +1
+            mes1=mes1+" Tipo :"+a
+        if data["Pin"] != "" and  data["Pin"] != " "  :
+            p=OpControl().ModificarControl(int(id),"Pin",int(data["Pin"]))
+            cont = cont +1
+            mes1=mes1+" Pin :"+p
+        
+        if data["Marca"] != control["Marca"]:
+                
+                if data["Marca"]=="":
+                    e=OpControl().EliminarMarcaControl(int (id))
+                    mes1=mes1+" Marca :"+ e
+                else:
+                    if data["Create"] == 1:
+                        e=OpControl().RegistrarMarca(int (id),data["Marca"])
+                    else :
+                        e=OpControl().CopiarMarca(int (id),data["Marca"])
+                    mes1=mes1+" Marca :"+ e
+                cont = cont +1
+                
+        # mes= "Se registraron "+ (str(cont)) + "Cambios, " +mes1
+        dit={
+            "CantidadCambios":cont,
+            "Message":mes1
+        }
+        print (dit)
+        return jsonify(dit)
+
+    else:
+        return("Error no existe Control")
+
+
+
+
+
+@app.route('/API/ControlIR/<string:id>/delCode/<string:NameCommand>' )
+def DeleteCodigoControl(id,NameCommand):
+    e=OpControl().BorrarCodigo(int(id),str(NameCommand))
+    return jsonify(e)
+
+@app.route('/API/ControlIR/<string:id>/delAllCodes',methods=["PUT"] )
+def DeleteAllCodesControls(id):
+    data=request.json
+    if data["Marca"] == "true" or data["Marca"]==True:
+        e=OpControl().BorrarTodosCodigos(int(id),True)
+        return jsonify(e)
+    else:
+        e=OpControl().BorrarTodosCodigos(int(id),True)
+        return jsonify(e)
+
+
+
+@app.route('/API/ControlIR/<string:id>/send/<string:NameCommand>')
+def mandarIR(id,NameCommand):
+    cont =OpControl().BuscarControl(int(id))
+    if cont!=0:
+        
+        if cont["Codigos"][NameCommand]:
+            print("Si existe necesitas ahora envairlo al rasp" )
+            return ("Si existe") 
+        else :
+            return ("No se registro Codigo")
+    else:
+        return("Error no existe Control")
+@app.route('/API/ControlIR/<string:id>/LecIR/<string:LecIR>/<string:Name>')
+def RegistrarCodigo(id,LecIR,Name):
+    # byte =leerIR(int(LecIR))
+    return OpControl().AddCodigo(int(id),Name,"byte")
+
+
+######webas?#######3
 @app.route('/API/Node/<string:ID>')
 def compNode(ID):
 
