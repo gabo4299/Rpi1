@@ -340,7 +340,7 @@ class OpRasp:
                         luz.append(x)
                     for y in IoT:
                         PinesOcupados.update({str(y):"IoT_Luz"})
-                if lent == 6:
+                if lent == 8:
                     for x in range (0,CantidadPWM):
                         pwm.append(x)
                     for x in range (0,CantidadLuz):
@@ -352,8 +352,12 @@ class OpRasp:
                         if  len (PinesOcupados) < 3:
                             PinesOcupados.update({str(y):"IoT_Luz"})
                         else :
-                            PinesOcupados.update({str(y):"IoT_Sen"})
-                if lent ==9:
+                            if len (PinesOcupados) ==7:
+                                PinesOcupados.update({str(y):"IoT_Lec_S"})
+                            else:
+                                PinesOcupados.update({str(y):"IoT_Sen"})    
+                            
+                if lent ==13:
                     for x in range (0,CantidadPWM):
                         pwm.append(x)
                     for x in range (0,CantidadLuz):
@@ -365,7 +369,10 @@ class OpRasp:
                         if  len (PinesOcupados) < 3:
                             PinesOcupados.update({str(y):"IoT_Luz"})
                         else :
-                            PinesOcupados.update({str(y):"IoT_Sen"})
+                            if len (PinesOcupados) ==7 or len (PinesOcupados) ==12:
+                                PinesOcupados.update({str(y):"IoT_Lec_S"})
+                            else:
+                                PinesOcupados.update({str(y):"IoT_Sen"}) 
                 
 
                 for x in allpins:
@@ -2595,9 +2602,10 @@ class OpLecIR:
 # print (OpControl().ElimnarControl(2,True))
 # print (OpControl().BorrarCodigo(1,"prechanel"))
 # print (OpControl().BorrarTodosCodigos(2,True))
-# with open('MarcasSis.json') as file:
-#      MarcSis = json.load(file)
-# OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
+OpMarcaControl().EliminarMarca("Samsung")
+with open('MarcasSis.json') as file:
+     MarcSis = json.load(file)
+OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
 # print (OpLecIR().InsertarLector(1,1,1,"Rasp",9))
 # OpCasa().insertarCasa(1,"Gabo",124.11)
 # OpRasp().InsertarRasp(1,1,16,16,[1,0,4,5,6,7])

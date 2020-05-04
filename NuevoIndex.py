@@ -199,9 +199,9 @@ def add():
                             f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
                             ruta=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
                             ruta=ruta+request.form["nombre"]+".jpg"
-                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha'])
+                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
                 else:
-                    return OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha'])
+                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha']))
 
             else:
                 

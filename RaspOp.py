@@ -7,9 +7,24 @@ import busio
 import board
 import time
 class Rasp:
-    def __init__(self ,Clock11,Latch12,Data14,S0,S1,S2,S3,l1,SS0,SS1,SS2,SS3,l2,CantLuces):
+    def __init__(self ,Clock11,Latch12,Data14,S0,S1,S2,S3,l1,SS0,SS1,SS2,SS3,l2,CantLuces,CantPWM):
+        '''Clock es el pin nro 11 del Shift que es para seleccionar que numero de pin es ,Latch es el pin 12 que sirve para mandar las datas
+        del array , data es el pin 14 para cada clock tendra que ponerse un data de  0 O 1
         
-        self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        s0 , s1,s2,s3 son los primero 16 sensores ,l1 sera la lectura , lo mismo para SS y l2 
+        
+        CantLuces es la cantidad de luces   
+        Falta Agregar la cant mot y optimizar de los sensores ! '''
+        self.CantLuces=CantLuces
+        if CantLuces ==8:
+            self.arrayLuces=[0,0,0,0,0,0,0,0]     
+        if CantLuces == 16:
+            self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
+        if CantLuces == 24 :
+            self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        if CantLuces == 32 :
+            self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        
         GPIO.setwarnings(False)
 
         GPIO.setmode(GPIO.BCM)
@@ -60,17 +75,18 @@ class Rasp:
         pca.frequency = 50
         # Set channels to the number of servo channels on your kit.
         # 8 for FeatherWing, 16 for Shield/HAT/Bonnet.
-        self.kit = ServoKit(channels=16)
+        if CantPWM != 0 : 
+        
+            self.kit = ServoKit(channels=CantPWM)
      
-    def BitLuz (self,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16) :
+    def BitLuz (self) :
         if (self.data_pin != 0):
             estado=0
             GPIO.output(self.data_pin, False)
-            #si quieres que la salida sea como la entrada es decir que el primer lugar corresponda al 1er foco es asi
-            arra=[f16,f15,f14,f13,f12,f11,f10,f9,f8,f7,f6,f5,f4,f3,f2,f1]
-            #sino la salida sera al revez
-            #arra=[f1,f2,f3,f4,f5,f6,f7,f8]
-            for x in range(16):    
+            arra=self.arrayLuces
+            arra=arra[::-1]
+            #el ::-1 es  para invertir :V 
+            for x in range(self.CantLuces):    
                 if(arra[x] == 1 ):
                     if(estado == arra[x]):
                         print ("presiono boton 1")
@@ -105,17 +121,18 @@ class Rasp:
             
             print("------------presiono boton 3")
             GPIO.output(self.latch_pin, True)
-            sleep(0.02)
+            # sleep(0.02)
             GPIO.output(self.latch_pin, False) 
         else:
             print("No existe Shift Register en esta Raspverry")
             return("No existe Shift Register en esta Raspverry")
     #                   EL ORDEN ES SETEAS LA LUZ  O LUCES A ENCENDER Y LUEGO ACCIONAS EL INTERRUPTOR EN ESTE CASO ACCION LUZ 
     def setLUZ(self,NPin , Estado):
+        ''' Ingresas del 1 a la cantidad de luces estados con 0 o 1 true false'''
         #ingresas del 1 al 16 estados con 0 o 1 true false
         NPin=int(NPin)
         
-        for x in range(16): 
+        for x in range(self.CantLuces): 
             if(x+1 == NPin):
                 if(Estado == True):
                     self.arrayLuces[x]=1
@@ -123,7 +140,12 @@ class Rasp:
                     self.arrayLuces[x]=0
 
     def AccionLuz(self):
-           Rasp.BitLuz(self,self.arrayLuces[0],self.arrayLuces[1],self.arrayLuces[2],self.arrayLuces[3],self.arrayLuces[4],self.arrayLuces[5],self.arrayLuces[6],self.arrayLuces[7],self.arrayLuces[8],self.arrayLuces[9],self.arrayLuces[10],self.arrayLuces[11],self.arrayLuces[12],self.arrayLuces[13],self.arrayLuces[14],self.arrayLuces[15])
+        
+        
+           Rasp.BitLuz(self)
+
+    #
+    ####
     ###################sensores #################
     def Bin(self,decimal):
         decimal=decimal-1
@@ -141,6 +163,13 @@ class Rasp:
         print("y leer el pin tanto")
         return  binario
 
+
+
+
+    
+    
+    
+    
     def LeerSensor1(self,NroSen):
         if(self.Sen0 != 0):
             # print("leendo >V ")
@@ -151,6 +180,7 @@ class Rasp:
             GPIO.output(self.Sen2 , sen[2])
             GPIO.output(self.Sen3 , sen[3])
             lectura=GPIO.input(self.Lec1)
+            print (lectura)
             return (lectura)
         else:
             print("No Existe sensores 1 en esta raspberry ")
@@ -167,6 +197,7 @@ class Rasp:
             GPIO.output(self.Sen22 , sen[2])
             GPIO.output(self.Sen23 , sen[3])
             lectura=GPIO.input(self.Lec2)
+            print (lectura)
             return (lectura)
         else:
             print("No Existe sensores 2 en esta raspberry ")
@@ -174,8 +205,11 @@ class Rasp:
 
     #####################servos#################
     def MoverCortina(self,nroMot,dirc):
-        #0 = izquierda
-        #1  derecha
+       ''' 
+       Nmro Motor del 0 al 15
+       Dirc:
+       #0 = izquierda
+        #1  derecha'''
        nroMot = int  (nroMot)
        dirc = int (dirc)
        if (dirc):
@@ -188,3 +222,27 @@ class Rasp:
         self.kit.servo[nroMot].angle=90
 
  
+
+# R=Rasp(21,20,16,0,0,0,0,0,0,0,0,0,0,8)
+# R.setLUZ(8,1)
+# R.AccionLuz()
+# sleep(3)
+# print("Primer paasue")
+# R.setLUZ(8,0)
+# R.setLUZ(2,1)
+# R.AccionLuz()
+# sleep(1)
+# print("segudno paasue")
+# R.setLUZ(8,1)
+# R.setLUZ(2,0)
+# R.AccionLuz()
+# sleep(0.5)
+# print("tercer paasue")
+# R.setLUZ(8,0)
+# R.setLUZ(2,1)
+# R.AccionLuz()
+# sleep(2)
+# print("4to paasue")
+# R.setLUZ(8,1)
+# R.setLUZ(2,1)
+# R.AccionLuz()
