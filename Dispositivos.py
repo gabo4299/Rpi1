@@ -2,7 +2,10 @@ from  RaspOp  import Rasp
 import RPi.GPIO as GPIO
 from time import sleep
 import multiprocessing
-
+import  subprocess
+import json
+import os
+Mesage_Control=""
 def ServoCagon(Pin,Dirc):
     if Dirc == "Arriba":
         p=GPIO.PWM(Pin,50)
@@ -14,6 +17,29 @@ def ServoCagon(Pin,Dirc):
         p.start(4.5)
         for i in range (0,3000):
             sleep(0.1)
+
+def LecturaJson(RUTA,DircRp1,Nombre,Pin,Marca):
+    cont=0
+    condi=False
+    StringPin='-g'+str(Pin)
+    Archivo='-f'+Marca
+    ####Empiezas a ahcer el irrrpy
+    Lectura  = subprocess.Popen(['python', DircRp1,'-r',StringPin, Archivo,Nombre])
+    while condi == False:
+        with open(RUTA) as file:
+            data = json.load(file)
+        condi=data["Guardado"]
+        cont=cont+1
+        sleep(0.2)
+        
+        if cont >= 150:
+            Mesage_Control="Time Out"
+            condi=False
+            break
+    Lectura.kill()
+    print ("Matas el proceso")
+    
+    
 class Raspberry:
     def __init__ (self , IdRasp,IoT,Cant,CantPWM,BaseDeDatosRasp):
         self.IoTPins=IoT
@@ -21,6 +47,7 @@ class Raspberry:
         self.Id=IdRasp
         self.InfoRasp=BaseDeDatosRasp
         self.ServosFuncioando={}
+        self.LectoresFuncionando={}
         if IoT == 0 : 
             self.IoTfunc=0
             GPIO.setwarnings(False)
@@ -28,10 +55,13 @@ class Raspberry:
         else : 
             if len(IoT) == 3 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],0,0,0,0,0,0,0,0,0,0,Cant,CantPWM)
+                self.CantidadSen=0
             if len(IoT) == 8 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],0,0,0,0,0,Cant,CantPWM)
+                self.CantidadSen=16
             if len(IoT) == 13 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],IoT[8],IoT[9],IoT[10],IoT[11],Cant,CantPWM)
+                self.CantidadSen=32
             else : 
                 print ("Fatal Error IoT")
                 #return ("Fatal Error IoT")
@@ -41,7 +71,7 @@ class Raspberry:
     def AddGpio(self,dictDePinesOcupados):
         print ("clear gpios  y despues seteas") 
         for k,v in dictDePinesOcupados.items():
-            print ("lA CADENA",v, "Empieza con IoT: ","IoT" in v)
+            #print ("lA CADENA",v, "Empieza con IoT: ","IoT" in v)
             if not "IoT" in v:
                 k=int (k)
                 if v == "Luz" or v == "OUTPUT":
@@ -124,7 +154,22 @@ class Raspberry:
 
 
     def UpdateRaspInfo(self,Base):
-        self.InfoRasp=BaseDeDatosRasp
+        datos = self.InfoRasp ["PinesOcupados"]
+        for k,v in dictDePinesOcupados.items():
+            
+            if not "IoT" in v and Pin == int (k):
+                k=int (k)
+                if v == "Luz" or v == "OUTPUT":
+                    GPIO.setup(k,GPIO.OUT)
+                if v == "Motor" or v == "PWM":
+                    GPIO.setup(k,GPIO.OUT)
+                    
+                if v == "Sensor" or v == "INPUT":
+                    GPIO.setup(k,GPIO.IN)
+                if v == "LecIR" or v == "Lector":
+                    print ("aqui va el archivo de donwloads irrp.py")
+                if v == "Control" or v == "IR":
+                    print ("aqui va el archivo de donwloads irrp.py")
     
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :
@@ -139,8 +184,116 @@ class Raspberry:
                 GPIO.output(Pin,True)
             else :
                 GPIO.output(Pin,False)
+    def LeerSensor (self,IoTBool,Pin):
+        Pin=int (Pin)
+        if IoTBool :
+            if self.CantidadSen != 0:
+                if self.CantidadSen == 16 :
+                    if Pin >= (self.CantidadSen/2):
+                       print (self.IoTfunc.LeerSensor1(Pin) )
+                       return (self.IoTfunc.LeerSensor1(Pin) )
+                    else : 
+                        pin2=Pin-16
+                        print (self.IoTfunc.LeerSensor2(pin2) )
+                        return (self.IoTfunc.LeerSensor2(pin2) )
+
+                else:
+                    print (self.IoTfunc.LeerSensor1(Pin) )
+                    return (self.IoTfunc.LeerSensor1(Pin) )
+                    
+                     
+        else :
+            return GPIO.input(Pin)
+             
         
-    
+    def DoDimmer (self,Pin,Val):
+        '''Valor de 0 a 100  por el momento no se puede papurri'''     
+        print ("Hola :V ") 
+    def BorrarCodigo(self ,Marca,Codigo):
+        try:
+            with open(Marca) as file:
+                Cods = json.load(file) 
+            if Cods[Codigo]:
+                del Cods[Codigo]
+                with open(Marca, 'w') as file:
+                    json.dump(Cods, file)
+            else:
+                return("error de codigo")
+        except:
+            return ("error de Marca")
+        
+    def AddCodigo(self ,Marca,Codigo,raw):
+        try:
+            with open(Marca) as file:
+                Cods = json.load(file) 
+            if !Cods[Codigo]:
+                d={Codigo:raw}
+                Cods.update(d)
+                with open(Marca, 'w') as file:
+                    json.dump(Cods, file)
+            else:
+                return("error de codigo existe")
+        except:
+            return ("error de Marca")
+    def BorrarArchivoCodigo(self ,Marca):
+        try:
+            os.remove(Marca)
+        except:
+            return ("error de Marca")
+    def AddListaCompleta(self ,Marca,CodigosDict):
+        try:
+            with open(Marca, 'w') as file:
+                    json.dump(CodigosDict, file)
+        except:
+            return ("error")
+
+
+    def LeerCodigo(self,PIN2,Nombre,Marca):
+        '''Una lecturaa a la vez  Nombre es el Nombre de Codigo y Marca es el nombre dl Archivo Donde se guardara 
+        ej SAMSUNG'''
+        
+        RutaJson="Lector/EstadoControl.json"
+        PIN2=int(PIN2)
+        RutaIR="Lector/irrp_IoT_Rasp.py"
+        RutaCod="Lector/"+Marca
+        # compruebas el estado de la ruta 
+        with open(RutaJson) as file:
+            EstadoLec = json.load(file)
+        if EstadoLec["Estado"]== "Desactivado":
+            #inicias y lees al mismo tienpo  
+            ProcessoLectura= multiprocessing.Process(target=LecturaJson,args=(RutaJson,RutaIR,Nombre,PIN2,Marca,))
+            ProcessoLectura.start()
+            ProcessoLectura.join()
+            if Mesage_Control  == "" :
+                data={
+                    "Confirmado": False, 
+                    "Mensaje": "", 
+                    "Confirm": False, 
+                    "Estado": "Desactivado", 
+                    "Guardado": False}
+                with open(RutaJson, 'w'  ) as file:
+                    json.dump(data, file, indent=4)
+                with open(RutaCod) as file:
+                    CodigosNew = json.load(file)
+                
+                if CodigosNew[Nombre]:
+                    return CodigosNew[Nombre]
+                else:
+                    return "Error Revise el Archivo Dispositivos .py"
+            else:
+                return Mesage_Control 
+                
+            
+        else :
+            return "Ocupado"
+
+        
+    def MandarCodigoIR(self,Pin,Codigo,Marca):
+        StringPin= "-g"+str(Pin)
+        rutaIR="Lector/irrp_IoT_Rasp.py"
+        Archivo="-f"+Marca
+        MandIR= subprocess.Popen(['python', rutaIR,'-p',StringPin, Archivo,Codigo])
+         
 
 
 class NodeMCU:
@@ -151,25 +304,29 @@ class NodeMCU:
 
 
 #
-# UNO=Raspberry(0,[21,20,16],8,16,False)
+UNO=Raspberry(0,[21,20,16],8,16,False)
 
-# UNO.AccionLuz(True,"Apagar",8)
-# UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
-# print ("printeando :V la hueva esta esperate")
-# #sleep(2)
-# print ("ya")
+UNO.AccionLuz(True,"Apagar",8)
+UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
 
-# #sleep(5)
+#UNO.LeerCodigo(24,"Mute","Samsung")
 
-# UNO.AccionLuz(True,"Encender",8)
-# UNO.AccionMotor(False,5,"Abajo")
-# UNO.AccionMotor(True,0,"Abajo")
-# print ("izquierda")
-# sleep(5)
-# print ("DERECHA")
-# UNO.AccionMotor(False,5,"Arriba")
-# UNO.AccionMotor(True,0,"Arriba")
-# sleep(3)
-# print ("Parado")
-# UNO.AccionMotor(False,5,"Parar")
-# UNO.AccionMotor(True,0,"Parar")
+#UNO.MandarCodigoIR(23,"Off","Samsung")
+
+#sleep(10)
+#UNO.MandarCodigoIR(23,"Mute","Samsung")
+
+#sleep(5)
+
+#UNO.AccionLuz(True,"Encender",8)
+#UNO.AccionMotor(False,5,"Abajo")
+#UNO.AccionMotor(True,0,"Abajo")
+#print ("izquierda")
+#sleep(5)
+#print ("DERECHA")
+#UNO.AccionMotor(False,5,"Arriba")
+#UNO.AccionMotor(True,0,"Arriba")
+#sleep(3)
+#print ("Parado")
+#UNO.AccionMotor(False,5,"Parar")
+#UNO.AccionMotor(True,0,"Parar")

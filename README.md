@@ -8,5 +8,6 @@ los controles IR y Lectores no sse pueden utiliazar en IoT
 
 ##Funcionando:
 Falta todo disp de Nodes y Esp32 
-De rasp falta sensores y Controles y lectores con irrp.py en downloads
+De rasp falta y o o funciona el Dimmer 
+se anhadio el Lector Para la raspberry para q funcione !! 
 http://abyz.me.uk/rpi/pigpio/examples.html#Python_irrp_py

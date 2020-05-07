@@ -12,10 +12,18 @@
 #     time.sleep(0.5)
 # else:
 #     exit()
-import pymongo
-cliente = pymongo.MongoClient('mongodb://localhost:27017/')
-db = cliente["pruebaAcuarto2"]
-coleccion=db["Rasp"]
-paramet="PinOcupados"
-valor ={"valor":"punto","si":"no"}
-coleccion.update({ "IdRasp": 1}, {"$set":{ str(paramet): valor}},multi=True)
+
+import subprocess 
+
+proceso=subprocess.Popen(["python",''])
+
+
+
+
+# import pymongo
+# cliente = pymongo.MongoClient('mongodb://localhost:27017/')
+# db = cliente["pruebaAcuarto2"]
+# coleccion=db["Rasp"]
+# paramet="PinOcupados"
+# valor ={"valor":"punto","si":"no"}
+# coleccion.update({ "IdRasp": 1}, {"$set":{ str(paramet): valor}},multi=True)

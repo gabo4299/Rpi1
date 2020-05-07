@@ -1,0 +1,6 @@
+
+El irrp_IoT_Rasp
+tiene modificaciones en las primeras lineas que son : 
+FILE
+EstadoCOntorl 
+RutaJSON
