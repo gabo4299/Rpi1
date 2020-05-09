@@ -1,9 +1,5 @@
 #El indexraspeberry es el  uso en la rpi lo unico que agrega o modifica es el def encender 
-'''import RPi.GPIO as GPIO #Librería para controlar GPIO
-GPIO.setmode(GPIO.BCM) #Simplemente nos sirve para usar números de pin de placa y no del procesador
-GPIO.setwarnings(False)
-led = 21 #Variable donde ponemos el pin que usaremos para el LED
-GPIO.setup(led, GPIO.OUT)'''
+
 #pymogno installar!
 '''
 #instalar paho-mqtt

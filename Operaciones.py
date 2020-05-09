@@ -6,13 +6,11 @@ import json
 import time
 cliente = pymongo.MongoClient('mongodb://localhost:27017/')
 
-cantidadluces=16
-cantidadmotores=16
-cantidadsensores=32
+
 NombreBase="pruebaAcuarto2"
 #x=Cuarto(1,'CuartoGabo','NOjet','123',1)
 
-#coleccion.insert_one(x.toDBCollection())
+#coleccion.insert(x.toDBCollection())
 class OpEsp32:
     def __init__ (self):
         self.CollectionName="Esp32"
@@ -76,7 +74,7 @@ class OpEsp32:
             cua=Esp32(IdEsp32,IdCasa,lista,{},len(lista),0,"Desactivado",Descripcion)
             
             
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             return ("Creado Satisfactoriamente")
             
     def CambiarEstado(self,IdEsp32):
@@ -86,9 +84,9 @@ class OpEsp32:
         if  OpEsp32().buscarEsp32(IdEsp32)==True: 
             n=OpEsp32().MostrarESP32Esp(IdEsp32)
             if (n["Estado"] == "Activado"):
-                coleccion.update_one({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Desactivado"}})
+                coleccion.update({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Desactivado"}})
             else:
-                coleccion.update_one({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Activado"}})
+                coleccion.update({ "IdEsp32": IdEsp32}, {"$set":{ "Estado": "Activado"}})
         else:
             return ("No existe Esp32 con este ID")
             
@@ -109,7 +107,7 @@ class OpEsp32:
                 if paramet=="IdEsp32" or paramet=="IdCasa" or paramet=="Cantidad Pines Libres" or paramet=="Cantidad Pines Ocupados" or  paramet=="Cantidad Analogicos" :
                     valor=int(valor)
                     
-                    coleccion.update_one({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
 
                     
                             
@@ -119,7 +117,7 @@ class OpEsp32:
                         
                         coleccion.update({ "IdEsp32": id}, {"$set":{ str(paramet): valor}},multi=True)
                     else:
-                        coleccion.update_one({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
+                        coleccion.update({ "IdEsp32": id}, {"$set":{ str(paramet): valor}})
                     
 
                 #if vaca is not None:
@@ -145,7 +143,7 @@ class OpEsp32:
         if OpEsp32().buscarEsp32(ID)==True:
 
             print("Eliminando")        
-            coleccion.delete_one({ "IdEsp32": ID })
+            coleccion.delete({ "IdEsp32": ID })
             DeleteDisp().ElimianrDisp("IdEsp32",ID)
             return ('elimiando ')
                 
@@ -398,7 +396,7 @@ class OpRasp:
                 
                 cua=Raspberry(IdRasp,IdCasa,pinsl,PinesOcupados,len(pinsl),len(PinesOcupados),CantidadPWM,pwm,cantidadsensores,sens,CantidadLuz,luz,Descripcion)
                 
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             OpCasa().agregarRasp(IdCasa)
             return ("Creado Satisfactoriamente")            
     def ModRasp(self,id,paramet,valor):
@@ -418,7 +416,7 @@ class OpRasp:
                 if paramet=="IdRasp" or paramet=="IdCasa" or paramet=="Cantidad Pines Libres" or paramet=="Cantidad Pines Ocupados" or paramet=="Cantidad PWM" or paramet=="Cantidad Sensores" or paramet=="Cantidad Interruptores/Luces" :
                     valor=int(valor)
                     
-                    coleccion.update_one({ "IdRasp": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "IdRasp": id}, {"$set":{ str(paramet): valor}})
 
                     
                     
@@ -427,7 +425,7 @@ class OpRasp:
                     if paramet=="PinesOcupados":
                         coleccion.update({ "IdRasp": id}, {"$set":{ str(paramet): valor}},multi=True)
                     else:
-                        coleccion.update_one({ "IdRasp": id}, {"$set":{ str(paramet): valor}})
+                        coleccion.update({ "IdRasp": id}, {"$set":{ str(paramet): valor}})
                     
 
                 
@@ -451,7 +449,7 @@ class OpRasp:
         if OpRasp().buscarRasp(ID)==True:
 
             print("Eliminando")        
-            coleccion.delete_one({ "IdRasp": ID })
+            coleccion.delete({ "IdRasp": ID })
             DeleteDisp().ElimianrDisp("Rasp",ID)
             return("Eliminado")  
             
@@ -745,14 +743,14 @@ class DeleteDisp:
         
         for vaca in c1.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdCortina": 1}):
             
-            c1.delete_one({ "IdCortina": vaca["IdCortina"] })
+            c1.delete({ "IdCortina": vaca["IdCortina"] })
         for vaca in c2.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdInterruptor": 1}):
-            c2.delete_one({ "IdInterruptor": vaca["IdInterruptor"] })
+            c2.delete({ "IdInterruptor": vaca["IdInterruptor"] })
         for vaca in c3.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdLec": 1}):
             
-            c3.delete_one({ "IdLec": vaca["IdLec"] })
+            c3.delete({ "IdLec": vaca["IdLec"] })
         for vaca in c4.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdControl": 1}):
-            c4.delete_one({ "IdControl": vaca["IdControl"] })
+            c4.delete({ "IdControl": vaca["IdControl"] })
 class OpNode:
     def __init__ (self):
         self.CollectionName="Node"
@@ -815,7 +813,7 @@ class OpNode:
             cua=Node(IdNode,IdCasa,["D0","D1","D2","D3","D4","D5","D6","D7","D8"],{},9,0,"A0","",1,"Desactivado",Descripcion)
             
             
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             return ("Creado Satisfactoriamente")
             
     def CambiarEstado(self,IdNode):
@@ -825,9 +823,9 @@ class OpNode:
         if  OpNode().buscarNode(IdNode)==True: 
             n=OpNode().MostrarNodeEsp(IdNode)
             if (n["Estado"] == "Activado"):
-                coleccion.update_one({ "IdNode": IdNode}, {"$set":{ "Estado": "Desactivado"}})
+                coleccion.update({ "IdNode": IdNode}, {"$set":{ "Estado": "Desactivado"}})
             else:
-                coleccion.update_one({ "IdNode": IdNode}, {"$set":{ "Estado": "Activado"}})
+                coleccion.update({ "IdNode": IdNode}, {"$set":{ "Estado": "Activado"}})
         else:
             return ("No existe Node con este ID")
             
@@ -848,7 +846,7 @@ class OpNode:
                 if paramet=="IdNode" or paramet=="IdCasa" or paramet=="Cantidad Pines Libres" or paramet=="Cantidad Pines Ocupados" or  paramet=="Cantidad Analogicos" :
                     valor=int(valor)
                     
-                    coleccion.update_one({ "IdNode": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "IdNode": id}, {"$set":{ str(paramet): valor}})
 
                     
                             
@@ -858,7 +856,7 @@ class OpNode:
                         
                         coleccion.update({ "IdNode": id}, {"$set":{ str(paramet): valor}},multi=True)
                     else:
-                        coleccion.update_one({ "IdNode": id}, {"$set":{ str(paramet): valor}})
+                        coleccion.update({ "IdNode": id}, {"$set":{ str(paramet): valor}})
                     
 
                 #if vaca is not None:
@@ -885,7 +883,7 @@ class OpNode:
 
             print("Eliminando")        
             DeleteDisp().ElimianrDisp("Node",ID)
-            coleccion.delete_one({ "IdNode": ID })
+            coleccion.delete({ "IdNode": ID })
             
             return ('elimiando ')
                 
@@ -1081,7 +1079,7 @@ class OpCasa:
             cua=Casa(IdCasa,Nombre,0,0,0,ip," ",0)
             
             
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             return ("Creado Satisfactoriamente")
 
 
@@ -1101,7 +1099,7 @@ class OpCasa:
                 
 
         
-            coleccion.delete_one({ "IdCasa": ID })
+            coleccion.delete({ "IdCasa": ID })
             db["Cuartos"].drop()
             db["Rasp"].drop()
             db["Node"].drop()
@@ -1136,13 +1134,13 @@ class OpCasa:
                 if paramet=="IdCasa" or paramet=="NDispositivos" or paramet=="Node" or paramet=="Rasp" :
                     valor=int(valor)
                     
-                    coleccion.update_one({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
 
                     
                     
                 else:
                     
-                    coleccion.update_one({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
                     
 
                 #if vaca is not None:
@@ -1167,7 +1165,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "NDispositivos": 1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "NDispositivos": 1 } })
 
 
     def RestDisp(self,id):
@@ -1179,7 +1177,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "NDispositivos": -1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "NDispositivos": -1 } })
     def agregarNode(self,id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -1189,7 +1187,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Node":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "Node": 1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "Node": 1 } })
 
 
     def RestNode(self,id):
@@ -1201,7 +1199,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Node":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "Node": -1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "Node": -1 } })
     def agregarRasp(self,id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -1211,7 +1209,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Rasp":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "Rasp": 1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "Rasp": 1 } })
 
 
     def RestRasp(self,id):
@@ -1223,7 +1221,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "Rasp":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "Rasp": -1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "Rasp": -1 } })
     def AddCuarto(self,id):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -1233,7 +1231,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "CantidadCuartos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "CantidadCuartos": 1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "CantidadCuartos": 1 } })
 
         
     def RestCuarto(self,id):
@@ -1245,7 +1243,7 @@ class OpCasa:
             for va in coleccion.find({ "IdCasa" : id},{ "_id": 0, "CantidadCuartos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "IdCasa": id}, { "$inc": { "CantidadCuartos": -1 } })
+            coleccion.update({ "IdCasa": id}, { "$inc": { "CantidadCuartos": -1 } })
 
 
 
@@ -1329,7 +1327,7 @@ class OpCuarto:
             cua=Cuarto(ID,IDCASA,NOMBRE,FONDO,CONTRASENHA,0)
             
             
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             OpCuarto().MostrarCuartos()
             OpCasa().AddCuarto(IDCASA)
             return ("Creado Satisfactoriamente")
@@ -1353,7 +1351,7 @@ class OpCuarto:
             db["Control"].delete_many({"IdCuarto":ID})
             s=OpCuarto().MostrarCuartoEsp(ID)
             OpCasa().RestCuarto( s["idcasa"])
-            coleccion.delete_one({ "idcuarto": ID })
+            coleccion.delete({ "idcuarto": ID })
             OpCuarto().MostrarCuartos()
             
             
@@ -1378,13 +1376,13 @@ class OpCuarto:
                 if paramet=="idcuarto" or paramet=="NDispositivos":
                     valor=int(valor)
                     
-                    coleccion.update_one({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
 
                     
                     
                 else:
                     
-                    coleccion.update_one({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
+                    coleccion.update({ "idcuarto": id}, {"$set":{ str(paramet): valor}})
                     
 
                 #if vaca is not None:
@@ -1413,7 +1411,7 @@ class OpCuarto:
             for va in coleccion.find({ "idcuarto" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "idcuarto": id}, { "$inc": { "NDispositivos": 1 } })
+            coleccion.update({ "idcuarto": id}, { "$inc": { "NDispositivos": 1 } })
             OpCasa().agregarDisp(OpCuarto().MostrarCuartoEsp(id)["idcasa"])
             
 
@@ -1427,7 +1425,7 @@ class OpCuarto:
             for va in coleccion.find({ "idcuarto" : id},{ "_id": 0, "NDispositivos":{ "$slice": (-1) } }):
                 numero=va
             
-            coleccion.update_one({ "idcuarto": id}, { "$inc": { "NDispositivos": -1 } })
+            coleccion.update({ "idcuarto": id}, { "$inc": { "NDispositivos": -1 } })
             OpCasa().RestDisp(OpCuarto().MostrarCuartoEsp(id)["idcasa"])
             
 
@@ -1538,7 +1536,7 @@ class OpInterruptor:
                         
                         
                        
-                        coleccion.insert_one(inte.toDBCollection())
+                        coleccion.insert(inte.toDBCollection())
                         OpCuarto().agregarDisp(IDCUARTO)
                         OpCuarto().MostrarCuartoEsp(IDCUARTO)
                         print ("agregado satisfacctoriamente")
@@ -1576,7 +1574,7 @@ class OpInterruptor:
             if jsonToPython['Dispositivo'] == "Esp32":
                 OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pin"])            
             
-            coleccion.delete_one( { "IdInterruptor": id })
+            coleccion.delete( { "IdInterruptor": id })
 
             
             print("eliminado")
@@ -1594,7 +1592,7 @@ class OpInterruptor:
         idInt=int(idInt)
         auxInt=OpInterruptor().buscarIdInterruptor(idInt)
         if(auxInt!=0):
-            coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ 'Estado': estado}})
+            coleccion.update({ "IdInterruptor": idInt}, {"$set":{ 'Estado': estado}})
             return ("completado")
         else:
             return ("No existe Interruptor")
@@ -1618,7 +1616,7 @@ class OpInterruptor:
                                     if OpRasp().PinLibre(i["IdDisp"],valor) == True:
                                         OpRasp().BorrarPinOcupadoRasp(i["IdDisp"],i["Pin"])
                                         OpRasp().AddPinOcupadoRasp(i["IdDisp"],valor,"OUT")
-                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                                        coleccion.update({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1627,7 +1625,7 @@ class OpInterruptor:
                                     if OpRasp().PinLibreIoT(i["IdDisp"],valor,"l") == True:
                                         OpRasp().BorrarPinIot(i["IdDisp"],i["Pin"],"l")
                                         OpRasp().AddPinOcupadoIoT(i["IdDisp"],valor,"l")
-                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                                        coleccion.update({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1635,7 +1633,7 @@ class OpInterruptor:
                                     if OpNode().PinLibre(i["IdDisp"],valor) == True:
                                         OpNode().BorrarPinOcupadoNode(i["IdDisp"],i["Pin"],0)
                                         OpNode().AddPinOcupadoNode(i["IdDisp"],valor,"OUT")
-                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                                        coleccion.update({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1643,7 +1641,7 @@ class OpInterruptor:
                                     if OpEsp32().PinLibre(i["IdDisp"],valor) == True:
                                         OpEsp32().BorrarPinOcupadoNode(i["IdDisp"],i["Pin"])
                                         OpEsp32().AddPinOcupadoNode(i["IdDisp"],valor,"OUT")
-                                        coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                                        coleccion.update({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                                         return ("Complete")
                                     else:
                                         return("Error Pin Usado")
@@ -1654,7 +1652,7 @@ class OpInterruptor:
                         
 
                     else:
-                            coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
+                            coleccion.update({ "IdInterruptor": idInt}, {"$set":{ str(Parametro): valor}})
                             return("complete")
 
                             break
@@ -1761,7 +1759,7 @@ class OpCortina:
 
                             # if (PINSENSOR1 != PINSENSOR2) : para evitar que sean pines iguales 
                                 cor=Cortina(IDCORTINA,IDCUARTO,IDDISPOSITIVO,Dispositivo, PINMOTOR,PINSENSOR1,PINSENSOR2,TIPO,"Abierto",NOMBRE)
-                                coleccion.insert_one(cor.toDBCollection())
+                                coleccion.insert(cor.toDBCollection())
                                 OpCuarto().agregarDisp(IDCUARTO)
                                 OpCuarto().MostrarCuartoEsp(IDCUARTO)
                                 OpCortina().MostrarCortinas()
@@ -1816,7 +1814,7 @@ class OpCortina:
                 #print(agg)
                 break
             OpCuarto().RestDisp(jsonToPython['IdCuarto'])
-            coleccion.delete_one( { "IdCortina": id })
+            coleccion.delete( { "IdCortina": id })
             if jsonToPython['Dispositivo'] == "Rasp":
                 OpRasp().BorrarPinOcupadoRasp(jsonToPython["IdDisp"],jsonToPython["Pinmotor"])
                 OpRasp().BorrarPinOcupadoRasp(jsonToPython["IdDisp"],jsonToPython["PinSensor1"])
@@ -1849,7 +1847,7 @@ class OpCortina:
         coleccion=db[self.CollectionName]   
         idcor=int(idcor)
         if(OpCortina().buscarIdCortina(idcor)!=0):
-            coleccion.update_one({ "IdCortina": idcor}, {"$set":{ 'Estado': estado}})
+            coleccion.update({ "IdCortina": idcor}, {"$set":{ 'Estado': estado}})
             OpInterruptor().MostrarInterruptores()
         else:
             print("No existe Interruptor")
@@ -1870,7 +1868,7 @@ class OpCortina:
                         valor=int(valor)
                         if( (Parametro== "IdCortina" and OpCortina().buscarIdCortina(valor)==0 ) or (Parametro=="IdCuarto" and OpCuarto().buscaridcuarto(valor)==True))  :
                             
-                            coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                            coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
 
                             return ("Completado")
                             break
@@ -1878,19 +1876,19 @@ class OpCortina:
                                 if (Parametro=="Pinmotor" and OpRasp().PinLibre(cort["IdDisp"],valor)==True):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["Pinmotor"])
                                     OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"PWM")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor1" and OpRasp().PinLibre(cort["IdDisp"],valor)==True ):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
                                     OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor2" and OpRasp().PinLibre(cort["IdDisp"],valor)==True):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor2"])
                                     OpRasp().AddPinOcupadoRasp(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 else:
@@ -1899,19 +1897,19 @@ class OpCortina:
                                 if (Parametro=="Pinmotor" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"PWM")==True):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["Pinmotor"])
                                     OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"PWM")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor1" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"S")==True):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
                                     OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"S")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor2" and OpRasp().PinLibreIoT(cort["IdDisp"],valor,"S")==True):
                                     OpRasp().BorrarPinOcupadoRasp(cort["IdDisp"],cort["PinSensor1"])
                                     OpRasp().AddPinOcupadoIoT(cort["IdDisp"],valor,"S")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 else:
@@ -1920,19 +1918,19 @@ class OpCortina:
                                 if (Parametro=="Pinmotor" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
                                     OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["Pinmotor"],0)
                                     OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"PWM")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor1" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
                                     OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor1"],0)
                                     OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor2" and OpNode().PinLibre(cort["IdDisp"],valor)==True):
                                     OpNode().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor2"],0)
                                     OpNode().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 else:
@@ -1941,19 +1939,19 @@ class OpCortina:
                                 if (Parametro=="Pinmotor" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
                                     OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["Pinmotor"])
                                     OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"PWM")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor1" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
                                     OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor1"])
                                     OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 if (Parametro=="PinSensor2" and OpEsp32().PinLibre(cort["IdDisp"],valor)==True):
                                     OpEsp32().BorrarPinOcupadoNode(cort["IdDisp"],cort["PinSensor2"])
                                     OpEsp32().AddPinOcupadoNode(cort["IdDisp"],valor,"IN")
-                                    coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                                    coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                                     return ("Completado")
                                     break
                                 else:
@@ -1963,7 +1961,7 @@ class OpCortina:
                             break
                     else:
                         
-                        coleccion.update_one({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
+                        coleccion.update({ "IdCortina": idcor}, {"$set":{ str(Parametro): valor}})
                         return ("Complete")
                         break
             else:
@@ -2045,13 +2043,13 @@ class OpControl:
                                     if Guardar==True and Marca != "":
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
                                         OpMarcaControl().InsertarMarca(Marca,{},False)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         
                                         OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
@@ -2062,7 +2060,7 @@ class OpControl:
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
-                                    coleccion.insert_one(control.toDBCollection())
+                                    coleccion.insert(control.toDBCollection())
                                     OpCuarto().agregarDisp(IdCuarto)
                                     OpRasp().AddPinOcupadoRasp(IdDisp,Pin,"LecIR")
                                     return ("Completado")
@@ -2079,13 +2077,13 @@ class OpControl:
                                     if Guardar==True and Marca != "":
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
                                         OpMarcaControl().InsertarMarca(Marca,{},False)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
@@ -2095,7 +2093,7 @@ class OpControl:
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
-                                    coleccion.insert_one(control.toDBCollection())
+                                    coleccion.insert(control.toDBCollection())
                                     OpCuarto().agregarDisp(IdCuarto)
                                     OpNode().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                     return ("Completado")
@@ -2111,13 +2109,13 @@ class OpControl:
                                     if Guardar==True and Marca != "":
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
                                         OpMarcaControl().InsertarMarca(Marca,{},False)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,{},Tipo)
-                                        coleccion.insert_one(control.toDBCollection())
+                                        coleccion.insert(control.toDBCollection())
                                         OpCuarto().agregarDisp(IdCuarto)
                                         OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                         return ("Completado")
@@ -2127,7 +2125,7 @@ class OpControl:
                                         control=Control(IdControl,IdDisp,Marca,Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
                                     else:
                                         control=Control(IdControl,IdDisp,"",Dispositivo,Pin,Nombre,IdCuarto,cods,Tipo)
-                                    coleccion.insert_one(control.toDBCollection())
+                                    coleccion.insert(control.toDBCollection())
                                     OpCuarto().agregarDisp(IdCuarto)
                                     OpEsp32().AddPinOcupadoNode(IdDisp,Pin,"LecIR")
                                     return ("Completado")
@@ -2227,11 +2225,11 @@ class OpControl:
                 if MarcaToo == True and marcs["Sistema"]!=True:
                     OpMarcaControl().EliminarMarca(M["Marca"])
                 
-                coleccion.delete_one({"IdControl":IdControl})
+                coleccion.delete({"IdControl":IdControl})
                 
                 return ("Control Borrado")
             else:
-                coleccion.delete_one({"IdControl":IdControl})
+                coleccion.delete({"IdControl":IdControl})
                 return ("Control Borrados")
         else:
             return ("No existe Control con este ID")
@@ -2254,7 +2252,7 @@ class OpControl:
                     if OpRasp().PinLibre(M["IdDisp"],Valor) == True:
                         OpRasp().BorrarPinOcupadoRasp(M["IdDisp"],M["Pin"])
                         OpRasp().AddPinOcupadoRasp(M["IdDisp"],Valor,"IN")
-                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        coleccion.update({"IdControl":IdControl},{"$set":{Parametro:Valor}})
                         return ("Complete")
                     else:
                         return ("Valor de Pin Usado")
@@ -2263,7 +2261,7 @@ class OpControl:
                     if OpNode().PinLibre(M["IdDisp"],Valor) == True:
                         OpNode().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"],0)
                         OpNode().AddPinOcupadoNode(M["IdDisp"],Valor,"IN")
-                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        coleccion.update({"IdControl":IdControl},{"$set":{Parametro:Valor}})
                         return ("Complete")
                     else:
                         return ("Valor de Pin Usado")
@@ -2271,14 +2269,14 @@ class OpControl:
                     if OpEsp32().PinLibre(M["IdDisp"],Valor) == True:
                         OpEsp32().BorrarPinOcupadoNode(M["IdDisp"],M["Pin"])
                         OpEsp32().AddPinOcupadoNode(M["IdDisp"],Valor,"IN")
-                        coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                        coleccion.update({"IdControl":IdControl},{"$set":{Parametro:Valor}})
                         return ("Complete")
                     else:
                         return ("Valor de Pin Usado")
 
             else:
                 Valor = str(Valor)
-                coleccion.update_one({"IdControl":IdControl},{"$set":{Parametro:Valor}})
+                coleccion.update({"IdControl":IdControl},{"$set":{Parametro:Valor}})
                 return ("Complete")
         else:
             return ("No existe Control con este ID")
@@ -2294,11 +2292,11 @@ class OpControl:
             if M["Marca"] != "":
                 if MarcaToo == True and marcs["Sistema"] != True:
                     OpMarcaControl().BorrarTodosCodigos(M["Marca"])
-                coleccion.update__one({"IdControl":IdControl},{"$set":{"Codigos":{}}})
+                coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":{}}})
                 
                 return ("Codigos Borrados")
             else:
-                coleccion.update_one({"IdControl":IdControl},{"$set":{"Codigos":{}}})
+                coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":{}}})
                 return ("Codigos Borrados s")
         else:
             return ("No existe Control con este ID")
@@ -2311,7 +2309,7 @@ class OpControl:
         if  M!= 0:
             if M["Marca"]=="":
                 if OpMarcaControl().BuscarMarcaNombre(Marca) == 0:
-                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":Marca}})
+                    coleccion.update({"IdControl":IdControl},{"$set":{"Marca":Marca}})
                     OpMarcaControl().InsertarMarca(Marca,M["Codigos"],False)
                 else:
                     return ("Marca ya existe cambie el nombre")
@@ -2329,9 +2327,9 @@ class OpControl:
         if  M!= 0:
             if Marca!="":
                 if OpMarcaControl().BuscarMarcaNombre(Marca) != 0:
-                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":Marca}})
+                    coleccion.update({"IdControl":IdControl},{"$set":{"Marca":Marca}})
                     marc=OpMarcaControl().BuscarMarcaNombre(Marca)
-                    coleccion.update_many({"IdControl":IdControl},{"$set":{"Codigos":marc["Codigos"]}})
+                    coleccion.update({"IdControl":IdControl},{"$set":{"Codigos":marc["Codigos"]}},multi=True)
                     return ("Complete")
                 else:
                     return ("Marca no existe cambie el nombre")
@@ -2347,7 +2345,7 @@ class OpControl:
         M=OpControl().BuscarControl(IdControl)
         if  M!= 0:
             
-                    coleccion.update_one({"IdControl":IdControl},{"$set":{"Marca":""}})
+                    coleccion.update({"IdControl":IdControl},{"$set":{"Marca":""}})
             
                 
 
@@ -2402,7 +2400,7 @@ class OpMarcaControl:
         coleccion=db[self.CollectionName]
         if OpMarcaControl().BuscarMarcaNombre(Marca) == 0 :
             cua=MarcasControles(Marca,Codigos,Sistema)
-            coleccion.insert_one(cua.toDBCollection())
+            coleccion.insert(cua.toDBCollection())
             return ("Completado")
 
         else:
@@ -2454,7 +2452,7 @@ class OpMarcaControl:
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
-            coleccion.delete_one({ "Marca": Marca})
+            coleccion.delete({ "Marca": Marca})
             return ("Eliminado")
         else:
             return("No existe Marca")
@@ -2462,7 +2460,7 @@ class OpMarcaControl:
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
-            coleccion.update_one({ "Marca": Marca}, {"$set":{ "Marca": New}})
+            coleccion.update({ "Marca": Marca}, {"$set":{ "Marca": New}})
             return ("Complete")
         else:
             return("No existe Marca")
@@ -2534,7 +2532,7 @@ class OpLecIR:
                             return ("Pin Ocupado")
                     else:
                         return ("No existe ID de Esp32")        
-                coleccion.insert_one(L.toDBCollection())
+                coleccion.insert(L.toDBCollection())
                 OpCasa().agregarDisp(IdCasa)
                 return ("Lector Agregado Satisfactoriamente")
             else:
@@ -2555,7 +2553,7 @@ class OpLecIR:
                 OpNode().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"],0)
             if vaca["Dispositivo"] == "Esp32":
                 OpEsp32().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"])
-            coleccion.delete_one({ "IdLec": IdLec })
+            coleccion.delete({ "IdLec": IdLec })
             return ("Complete")
         else:
             return("No exise Lector con ese ID")
@@ -2563,7 +2561,7 @@ class OpLecIR:
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
         if OpLecIR().BuscarLector(IdLec) != 0:
-            coleccion.update_one({ "IdLec": IdLec },{"$set":{"LastData": Codigo}})
+            coleccion.update({ "IdLec": IdLec },{"$set":{"LastData": Codigo}})
             return("Completado Registro de lectura")
             
         else:
