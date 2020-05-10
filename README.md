@@ -2,7 +2,8 @@
 Version 2 Node ,ESP32,Raspberry ,IoT 
 
 Need a lot of sudo pip3 mtf :V , pronto te lo ire poniendo perro 
-
+## Importante 
+tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
 ## Luces Cortinas Control IR
 los controles IR y Lectores no sse pueden utiliazar en IoT
 

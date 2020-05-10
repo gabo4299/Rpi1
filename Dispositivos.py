@@ -147,12 +147,6 @@ class Raspberry:
                     p.stop()
                     del self.ServosFuncioando[Pin]
                     
-            
-
-    
-        
-
-
     def UpdateRaspInfo(self,Base):
         datos = self.InfoRasp ["PinesOcupados"]
         for k,v in dictDePinesOcupados.items():
@@ -226,7 +220,7 @@ class Raspberry:
         try:
             with open(Marca) as file:
                 Cods = json.load(file) 
-            if !Cods[Codigo]:
+            if not Cods[Codigo]:
                 d={Codigo:raw}
                 Cods.update(d)
                 with open(Marca, 'w') as file:

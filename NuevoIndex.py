@@ -23,6 +23,7 @@ import subprocess
 import array
 from eventlet import tpool
 from Base import Cortina,Cuarto,Interruptor
+from RaspOp import Raspberry
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
 from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
 #from OperacionesWind import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
