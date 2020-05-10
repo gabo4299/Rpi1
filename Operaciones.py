@@ -143,7 +143,7 @@ class OpEsp32:
         if OpEsp32().buscarEsp32(ID)==True:
 
             print("Eliminando")        
-            coleccion.delete({ "IdEsp32": ID })
+            coleccion.remove({ "IdEsp32": ID })
             DeleteDisp().ElimianrDisp("IdEsp32",ID)
             return ('elimiando ')
                 
@@ -449,7 +449,7 @@ class OpRasp:
         if OpRasp().buscarRasp(ID)==True:
 
             print("Eliminando")        
-            coleccion.delete({ "IdRasp": ID })
+            coleccion.remove({ "IdRasp": ID })
             DeleteDisp().ElimianrDisp("Rasp",ID)
             return("Eliminado")  
             
@@ -743,14 +743,14 @@ class DeleteDisp:
         
         for vaca in c1.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdCortina": 1}):
             
-            c1.delete({ "IdCortina": vaca["IdCortina"] })
+            c1.remove({ "IdCortina": vaca["IdCortina"] })
         for vaca in c2.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdInterruptor": 1}):
-            c2.delete({ "IdInterruptor": vaca["IdInterruptor"] })
+            c2.remove({ "IdInterruptor": vaca["IdInterruptor"] })
         for vaca in c3.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdLec": 1}):
             
-            c3.delete({ "IdLec": vaca["IdLec"] })
+            c3.remove({ "IdLec": vaca["IdLec"] })
         for vaca in c4.find({ "Dispositivo":Disp,"IdDisp":Id},{ "_id": 0, "IdControl": 1}):
-            c4.delete({ "IdControl": vaca["IdControl"] })
+            c4.remove({ "IdControl": vaca["IdControl"] })
 class OpNode:
     def __init__ (self):
         self.CollectionName="Node"
@@ -883,7 +883,7 @@ class OpNode:
 
             print("Eliminando")        
             DeleteDisp().ElimianrDisp("Node",ID)
-            coleccion.delete({ "IdNode": ID })
+            coleccion.remove({ "IdNode": ID })
             
             return ('elimiando ')
                 
@@ -1099,7 +1099,7 @@ class OpCasa:
                 
 
         
-            coleccion.delete({ "IdCasa": ID })
+            coleccion.remove({ "IdCasa": ID })
             db["Cuartos"].drop()
             db["Rasp"].drop()
             db["Node"].drop()
@@ -1346,12 +1346,12 @@ class OpCuarto:
         if OpCuarto().buscaridcuarto(ID)==True:
 
             print("Eliminando")
-            db["Interruptores"].delete_many({ "IdCuarto": ID })
-            db["Cortinas"].delete_many({ "IdCuarto": ID })
-            db["Control"].delete_many({"IdCuarto":ID})
+            db["Interruptores"].remove({ "IdCuarto": ID })
+            db["Cortinas"].remove({ "IdCuarto": ID })
+            db["Control"].remove({"IdCuarto":ID})
             s=OpCuarto().MostrarCuartoEsp(ID)
             OpCasa().RestCuarto( s["idcasa"])
-            coleccion.delete({ "idcuarto": ID })
+            coleccion.remove({ "idcuarto": ID })
             OpCuarto().MostrarCuartos()
             
             
@@ -1574,7 +1574,7 @@ class OpInterruptor:
             if jsonToPython['Dispositivo'] == "Esp32":
                 OpEsp32().BorrarPinOcupadoNode(jsonToPython["IdDisp"],jsonToPython["Pin"])            
             
-            coleccion.delete( { "IdInterruptor": id })
+            coleccion.remove( { "IdInterruptor": id })
 
             
             print("eliminado")
@@ -1814,7 +1814,7 @@ class OpCortina:
                 #print(agg)
                 break
             OpCuarto().RestDisp(jsonToPython['IdCuarto'])
-            coleccion.delete( { "IdCortina": id })
+            coleccion.remove( { "IdCortina": id })
             if jsonToPython['Dispositivo'] == "Rasp":
                 OpRasp().BorrarPinOcupadoRasp(jsonToPython["IdDisp"],jsonToPython["Pinmotor"])
                 OpRasp().BorrarPinOcupadoRasp(jsonToPython["IdDisp"],jsonToPython["PinSensor1"])
@@ -2225,11 +2225,11 @@ class OpControl:
                 if MarcaToo == True and marcs["Sistema"]!=True:
                     OpMarcaControl().EliminarMarca(M["Marca"])
                 
-                coleccion.delete({"IdControl":IdControl})
+                coleccion.remove({"IdControl":IdControl})
                 
                 return ("Control Borrado")
             else:
-                coleccion.delete({"IdControl":IdControl})
+                coleccion.remove({"IdControl":IdControl})
                 return ("Control Borrados")
         else:
             return ("No existe Control con este ID")
@@ -2450,9 +2450,10 @@ class OpMarcaControl:
             return("No existe Marca")
     def EliminarMarca(self,Marca):
         db = cliente[NombreBase]
-        coleccion=db[self.CollectionName]
+        colecion=db[self.CollectionName]
+        new=Marca
         if OpMarcaControl().BuscarMarcaNombre(Marca) != 0 :
-            coleccion.delete({ "Marca": Marca})
+            colecion.remove({ 'Marca': new})
             return ("Eliminado")
         else:
             return("No existe Marca")
@@ -2553,7 +2554,7 @@ class OpLecIR:
                 OpNode().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"],0)
             if vaca["Dispositivo"] == "Esp32":
                 OpEsp32().BorrarPinOcupadoNode(vaca["IdDisp"],vaca["Pin"])
-            coleccion.delete({ "IdLec": IdLec })
+            coleccion.remove({ "IdLec": IdLec })
             return ("Complete")
         else:
             return("No exise Lector con ese ID")
@@ -2600,7 +2601,7 @@ class OpLecIR:
 # print (OpControl().ElimnarControl(2,True))
 # print (OpControl().BorrarCodigo(1,"prechanel"))
 # print (OpControl().BorrarTodosCodigos(2,True))
-OpMarcaControl().EliminarMarca("Samsung")
+#OpMarcaControl().EliminarMarca("Samsung")
 with open('MarcasSis.json') as file:
      MarcSis = json.load(file)
 OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)

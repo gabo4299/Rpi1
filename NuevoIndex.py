@@ -36,6 +36,12 @@ cont=1
 global DirFondos
 # UPLOAD_FOLDER ='Images/Fondos'
 # UPLOAD_FOLDER= "C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos"
+#################################################### WINDOWS###############
+#LinkArchivos=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
+#LinkArchivosDefault=C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
+##################################################   RASP   #############
+LinkArchivos=r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Fondo"
+LinkArchivosDefault= r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Default.png"
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -193,7 +199,7 @@ def add():
                             concadenacion="Fondo"+request.form['nombre']+'.jpg'
                             filename=secure_filename(concadenacion)
                             f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-                            ruta=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
+                            ruta=LinkArchivos
                             ruta=ruta+request.form["nombre"]+".jpg"
                     return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
                 else:
@@ -207,11 +213,12 @@ def add():
 
 @app.route('/API/Cuarto/<string:idcuarto>/del' , methods=['DELETE'])
 def dele(idcuarto):
+    print ("El resutado del delete es",OpCuarto().buscaridcuarto(idcuarto))
     if OpCuarto().buscaridcuarto(idcuarto)==True:
         idcuarto=int(idcuarto)
-
-        OpCuarto().eliminarCuarto(idcuarto)
-        return "eliminado satisfactoriamente"
+        
+        print ("Debuggg Delete", OpCuarto().eliminarCuarto(idcuarto))
+        return ("eliminado satisfactoriamente")
     else :
         return('no existe id ')
 
@@ -241,7 +248,7 @@ def mod(idcuarto):
                             concadenacion="Fondo"+OpCuarto().MostrarCuartoEsp(idcuarto)['nombre']+'.jpg'
                             filename=secure_filename(concadenacion)
                             f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-                            ruta=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
+                            ruta=LinkArchivos
                             ruta=ruta+OpCuarto().MostrarCuartoEsp(idcuarto)['nombre']+".jpg"
                             OpCuarto().modificarCuarto(idcuarto,'fondo',ruta)
             else:
@@ -265,7 +272,7 @@ def fondo(idcuarto):
         x=OpCuarto().MostrarCuartoEsp(int (idcuarto))
         print (x["idcuarto"])
         if (x["fondo"]=="No" or x["fondo"]=="n" or x["fondo"]=="None" or x["fondo"]=="none" ):
-            filename=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
+            filename=LinkArchivosDefault
             return send_file(filename,mimetype='image/gif')
         else:
             filename=x["fondo"]
@@ -274,7 +281,7 @@ def fondo(idcuarto):
         return ("No existe Cuarto")
 @app.route('/API/Cuarto/Fondo')
 def fondodef():
-    filename=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
+    filename=LinkArchivosDefault
     return send_file(filename,mimetype='image/gif')
 
 
