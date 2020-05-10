@@ -24,8 +24,8 @@ import array
 from eventlet import tpool
 from Base import Cortina,Cuarto,Interruptor
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
-from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
-#from OperacionesWind import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
+#from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
+from OperacionesWind import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
 from flask_cors import CORS, cross_origin
 #instalar uploader filename
 import os
@@ -39,11 +39,11 @@ global DirFondos
 # UPLOAD_FOLDER ='Images/Fondos'
 # UPLOAD_FOLDER= "C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos"
 #################################################### WINDOWS###############
-#LinkArchivos=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
-#LinkArchivosDefault=C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
+LinkArchivos=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
+LinkArchivosDefault=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
 ##################################################   RASP   #############
-LinkArchivos=r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Fondo"
-LinkArchivosDefault= r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Default.png"
+# LinkArchivos=r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Fondo"
+# LinkArchivosDefault= r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Default.png"
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
