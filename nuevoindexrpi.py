@@ -400,7 +400,9 @@ def addI(idcuarto):
     if (OpCuarto().buscaridcuarto(idcuarto)== True) :
 
          a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
-
+         if (val["Dispositivo"] == "Rasp"  ):
+            if val["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
          return (a)
     else:
          return('error de cuarto')
@@ -484,6 +486,9 @@ def addcor(idcuarto):
         idcort=OpCortina().LastID() +1
         # print (request.json)
         b=OpCortina().insertarCortina(idcort,idcuarto,request.json["IdDisp"],request.json["Dispositivo"],request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
+        if (val["Dispositivo"] == "Rasp"  ):
+            if val["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
         return (b)
     else :
         return('no existe id de caurto ')
@@ -659,6 +664,7 @@ def addDisp(Disp):
             if int(val["IdRasp"]) == 0 :
                 global ServerRasp
                 ServerRasp=Raspberry(0,val["IoT"],int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"])))
+
             return (j)
         else :
             return (j)
@@ -749,8 +755,9 @@ def addLecIR():
             else:
                 
                 j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
-                if val["Dispositivo"] == "Rasp" and j =="Lector Agregado Satisfactoriamente":
-                    ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
+                if val["Dispositivo"] == "Rasp" and j =="Lector Agregado Satisfactoriamente" :
+                    if val["IdDisp"==0]:
+                        ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
                 return j
         else :
             id=id+1
@@ -790,11 +797,19 @@ def addConrolIR():
     val=request.json
     IdControl=OpControl().LastID()+1
     
-    if (val["Guardar"] == False or val["Guardar"] == "False"):
+    if (val["Guardar"] == False or val["Guardar"] == "false"):
         
-        return (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],False,val["Tipo"]))
+        j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],False,val["Tipo"]))
+        if (val["Dispositivo"] == "Rasp"  ):
+            if val["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+        return j
     else:
-        return (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],True,val["Tipo"]))
+        j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],True,val["Tipo"]))
+        if (val["Dispositivo"] == "Rasp"  ):
+            if val["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+        return j
 
 @app.route('/API/ControlIR/<string:id>')
 def getConrolIR(id):
