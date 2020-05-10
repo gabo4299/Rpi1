@@ -45,7 +45,7 @@ global DirFondos
 ##################################################   RASP   #############
 LinkArchivosDefault=r"/home/pi/Desktop/Rpi1/Images/Fondos/Default.png"
 LinkArchivos=r"/home/pi/Desktop/Rpi1/Images/Fondos/Fondo"
-
+RaspberrysReg=[]
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -64,20 +64,7 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 #falta en (app,async mode='threading") 
 #nota sin el async mode no se puede parar el programa con cntrol c , pero si es en tiempo real !
-def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
-    if Accion =="Encendido" or Accion == True or Accion ==1:
-        val="Encendido"
-    else:
-        val ="Apagado"
-    if Dispositivo == "Rasp" or Dispositivo == "IoT":
-        if IdDisp == 1 : 
-            if Dispositivo == "IoT":
-                ServerRasp.AccionLuz(True,val,Pin)
-            else:
-                ServerRasp.AccionLuz(False,val,Pin)
 
-    else:
-        print ("el node")
 
 @app.route('/')
 @cross_origin()
@@ -369,7 +356,7 @@ def estadoLuz(idcuarto,idluz):
                     ####funcion cambio de luz de idluz a encender
                     socketio.emit('LuzCambio', (int(idluz),"Encendido"))
                     
-                    ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Enender",aux["Pin"])
+                    ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Encender",aux["Pin"])
                     # tpool.execute(imprimirsi)
                     # imprimirsi()
                     # print ("Encendido luz ",idluz,"gracias")
@@ -379,8 +366,9 @@ def estadoLuz(idcuarto,idluz):
                     if request.json['Estado']== 0 or request.json['Estado']=='Apagado':
                         OpInterruptor().modidificarEstadoiNT(idluz,'Apagado')
                         # imprimirsi()
-                        ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
+                        
                         socketio.emit('LuzCambio', (int(idluz),"Apagado"))
+                        ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
                         msg ="Apagando luz"  + str(idluz)+"gracias"
                         return (msg)
                     else:
@@ -416,8 +404,9 @@ def addI(idcuarto):
 
          a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
          if (request.json["Dispositivo"] == "Rasp"  ):
-            if request.json["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+            if request.json["IdDisp"] == 1:
+                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
          return (a)
     else:
          return('error de cuarto')
@@ -503,7 +492,8 @@ def addcor(idcuarto):
         b=OpCortina().insertarCortina(idcort,idcuarto,request.json["IdDisp"],request.json["Dispositivo"],request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
         if (request.json["Dispositivo"] == "Rasp"  ):
             if request.json["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
         return (b)
     else :
         return('no existe id de caurto ')
@@ -672,17 +662,15 @@ def Dispst(Disp):
 def addDisp(Disp):
     val=request.json
     if Disp == "Rasp":
-       
-        
-        j= (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
-        if j == "Creado Satisfactoriamente":
-            if int(val["IdRasp"]) == 0 :
+        IoTconf= (val["IoT"])
+        if int(val["IdRasp"]) == 1 :
                 global ServerRasp
-                ServerRasp=Raspberry(0,val["IoT"],int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"])))
+                print (IoTconf)
+                #ServerRasp=Raspberry(1,IoTconf,int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"])))
+                RaspberrysReg.append(Raspberry(1,IoTconf,int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"]))))
 
-            return (j)
-        else :
-            return (j)
+        j= (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
+        return j
     if Disp == "Node":
         js = (OpNode().InsertarNode(int(val["IdNode"]),int (val["IdCasa"]),val["Descripcion"]))
         return (js)
@@ -771,8 +759,9 @@ def addLecIR():
                 
                 j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
                 if val["Dispositivo"] == "Rasp" and j =="Lector Agregado Satisfactoriamente" :
-                    if val["IdDisp"==0]:
-                        ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
+                    if val["IdDisp"==1]:
+                        RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
+                        #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
                 return j
         else :
             id=id+1
@@ -816,14 +805,16 @@ def addConrolIR():
         
         j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],False,val["Tipo"]))
         if (val["Dispositivo"] == "Rasp"  ):
-            if val["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+            if val["IdDisp"] == 1:
+                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
         return j
     else:
         j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],True,val["Tipo"]))
         if (val["Dispositivo"] == "Rasp"  ):
             if val["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
         return j
 
 @app.route('/API/ControlIR/<string:id>')
@@ -971,7 +962,24 @@ def RegNode():
     return ("Si")
 
 
+################################################ OPERACIONES #####################################
+def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
+    print ("El pin es : ",Pin , "cON ACCION : ",Accion)
+    if Accion =="Encendido" or Accion == True or Accion ==1 or Accion == "Encender":
+        val="Encender"
+    else:
+        val ="Apagado"
+    if Dispositivo == "Rasp" or Dispositivo == "IoT":
+        if IdDisp == 1 : 
+            if Dispositivo == "IoT":
+                RaspberrysReg[0].AccionLuz(True,val,Pin)
+                #ServerRasp.AccionLuz(True,val,Pin)
+            else:
+                RaspberrysReg[0].AccionLuz(False,val,Pin)
+                #ServerRasp.AccionLuz(False,val,Pin)
 
+    else:
+        print ("el node")
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
 @socketio.on('luz')                                                                                                                     #
 def hacer(accion):                                                                                                                      #

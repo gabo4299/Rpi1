@@ -88,7 +88,7 @@ class Rasp:
             for x in range(self.CantLuces):    
                 if(arra[x] == 1 ):
                     if(estado == arra[x]):
-                        print ("presiono boton 1")
+                        #print ("presiono boton 1")
                         GPIO.output(self.clock_pin, True)
                         #sleep(0.02)
                         GPIO.output(self.clock_pin, False)
@@ -96,7 +96,7 @@ class Rasp:
                         estado=1
                         GPIO.output(self.data_pin, True)
                         print("#####cambio estado ",estado)
-                        print ("presiono boton 1")
+                        #print ("presiono boton 1")
                         GPIO.output(self.clock_pin, True)
                         #sleep(0.02)
                         GPIO.output(self.clock_pin, False)
@@ -104,7 +104,7 @@ class Rasp:
                         
                 if (arra[x] == 0 ):
                     if(estado == arra[x]):
-                        print ("presiono boton 1")
+                        #print ("presiono boton 1")
                         GPIO.output(self.clock_pin, True)
                         #sleep(0.02)
                         GPIO.output(self.clock_pin, False)
@@ -112,27 +112,27 @@ class Rasp:
                     else:
                         estado=0
                         GPIO.output(self.data_pin, False)
-                        print("#####cambio estado ",estado)
-                        print ("presiono boton 1")
+                        #print("#####cambio estado ",estado)
+                        #print ("presiono boton 1")
                         GPIO.output(self.clock_pin, True)
                         #sleep(0.02)
                         GPIO.output(self.clock_pin, False)
             
-            print("------------presiono boton 3")
+            #print("------------presiono boton 3")
             GPIO.output(self.latch_pin, True)
             # sleep(0.02)
             GPIO.output(self.latch_pin, False) 
         else:
-            print("No existe Shift Register en esta Raspverry")
+            #print("No existe Shift Register en esta Raspverry")
             return("No existe Shift Register en esta Raspverry")
     #                   EL ORDEN ES SETEAS LA LUZ  O LUCES A ENCENDER Y LUEGO ACCIONAS EL INTERRUPTOR EN ESTE CASO ACCION LUZ 
     def setLUZ(self,NPin , Estado):
-        ''' Ingresas del 1 a la cantidad de luces estados con 0 o 1 true false'''
+        ''' Ingresas del 0 a 15 la cantidad de luces estados con 0 o 1 true false'''
         #ingresas del 1 al 16 estados con 0 o 1 true false
         NPin=int(NPin)
         
         for x in range(self.CantLuces): 
-            if(x+1 == NPin):
+            if(x == NPin):
                 if(Estado == True):
                     self.arrayLuces[x]=1
                 else:
@@ -140,7 +140,7 @@ class Rasp:
 
     def AccionLuz(self):
         
-        
+           print ("clocl %i, lacht %i, data%i",self.clock_pin,self.latch_pin,self.data_pin) 
            Rasp.BitLuz(self)
 
     #
@@ -155,11 +155,11 @@ class Rasp:
             cont=cont+1
             decimal = decimal // 2
         binario[cont]=decimal
-        print("S0 Estado :" ,binario[0] )
-        print("S1 Estado :" ,binario[1] )
-        print("S2 Estado :" ,binario[2] )
-        print("S3 Estado :" ,binario[3] )
-        print("y leer el pin tanto")
+        #print("S0 Estado :" ,binario[0] )
+        #print("S1 Estado :" ,binario[1] )
+        #print("S2 Estado :" ,binario[2] )
+        #print("S3 Estado :" ,binario[3] )
+        #print("y leer el pin tanto")
         return  binario
 
 

@@ -53,26 +53,35 @@ class Raspberry:
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
         else : 
+            print ("el IoT es : ",IoT," COn len : ",len(IoT))
             if len(IoT) == 3 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],0,0,0,0,0,0,0,0,0,0,Cant,CantPWM)
                 self.CantidadSen=0
+                print ("Completado")
+                
             if len(IoT) == 8 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],0,0,0,0,0,Cant,CantPWM)
                 self.CantidadSen=16
+                print ("Completado")
+                
             if len(IoT) == 13 :
-                self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],IoT[8],IoT[9],IoT[10],IoT[11],Cant,CantPWM)
+                self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],IoT[8],IoT[9],IoT[10],IoT[11],IoT[12],Cant,CantPWM)
                 self.CantidadSen=32
-            else : 
-                print ("Fatal Error IoT")
-                #return ("Fatal Error IoT")
+                print ("Completado")
+                
+            else  :
+                if len(IoT) != 3 and len(IoT) != 8  and len(IoT) != 13  :
+                    print ("Fatal Error IoT")
+                
 
 
         
     def AddGpio(self,dictDePinesOcupados):
-        print ("clear gpios  y despues seteas") 
+        
         for k,v in dictDePinesOcupados.items():
             #print ("lA CADENA",v, "Empieza con IoT: ","IoT" in v)
             if not "IoT" in v:
+                print ("adicionando gṕio desde ADD GPIO , sin el IOT" )
                 k=int (k)
                 if v == "Luz" or v == "OUTPUT":
                     GPIO.setup(k,GPIO.OUT)
@@ -167,7 +176,9 @@ class Raspberry:
     
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :
+            print ("encendiendo desde Accion luz con IOt BOOL ,CON ESTADO" , Accion)
             if Accion == "Encender":
+                
                 self.IoTfunc.setLUZ(Pin ,1)
 
             else : 
@@ -298,10 +309,10 @@ class NodeMCU:
 
 
 #
-UNO=Raspberry(0,[21,20,16],8,16,False)
+#UNO=Raspberry(0,[21,20,16],8,16,False)
 
-UNO.AccionLuz(True,"Apagar",8)
-UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
+#UNO.AccionLuz(True,"Apagar",8)
+#UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
 
 #UNO.LeerCodigo(24,"Mute","Samsung")
 
