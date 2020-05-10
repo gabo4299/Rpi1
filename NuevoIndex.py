@@ -42,8 +42,9 @@ global DirFondos
 #LinkArchivos=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
 #LinkArchivosDefault=C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
 ##################################################   RASP   #############
-LinkArchivos=r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Fondo"
-LinkArchivosDefault= r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Default.png"
+LinkArchivosDefault=r"/home/pi/Desktop/Rpi1/Images/Fondos/Default.png"
+LinkArchivos=r"/home/pi/Desktop/Rpi1/Images/Fondos/Fondo"
+
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
