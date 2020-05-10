@@ -149,21 +149,21 @@ class Raspberry:
                     
     def UpdateRaspInfo(self,Base):
         datos = self.InfoRasp ["PinesOcupados"]
-        for k,v in dictDePinesOcupados.items():
+        # for k,v in Base.items():
             
-            if not "IoT" in v and Pin == int (k):
-                k=int (k)
-                if v == "Luz" or v == "OUTPUT":
-                    GPIO.setup(k,GPIO.OUT)
-                if v == "Motor" or v == "PWM":
-                    GPIO.setup(k,GPIO.OUT)
+        #     if not "IoT" in v and Pin == int (k):
+        #         k=int (k)
+        #         if v == "Luz" or v == "OUTPUT":
+        #             GPIO.setup(k,GPIO.OUT)
+        #         if v == "Motor" or v == "PWM":
+        #             GPIO.setup(k,GPIO.OUT)
                     
-                if v == "Sensor" or v == "INPUT":
-                    GPIO.setup(k,GPIO.IN)
-                if v == "LecIR" or v == "Lector":
-                    print ("aqui va el archivo de donwloads irrp.py")
-                if v == "Control" or v == "IR":
-                    print ("aqui va el archivo de donwloads irrp.py")
+        #         if v == "Sensor" or v == "INPUT":
+        #             GPIO.setup(k,GPIO.IN)
+        #         if v == "LecIR" or v == "Lector":
+        #             print ("aqui va el archivo de donwloads irrp.py")
+        #         if v == "Control" or v == "IR":
+        #             print ("aqui va el archivo de donwloads irrp.py")
     
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :

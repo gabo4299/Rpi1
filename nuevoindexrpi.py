@@ -64,6 +64,20 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 #falta en (app,async mode='threading") 
 #nota sin el async mode no se puede parar el programa con cntrol c , pero si es en tiempo real !
+def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
+    if Accion =="Encendido" or Accion == True or Accion ==1:
+        val="Encendido"
+    else:
+        val ="Apagado"
+    if Dispositivo == "Rasp" or Dispositivo == "IoT":
+        if IdDisp == 1 : 
+            if Dispositivo == "IoT":
+                ServerRasp.AccionLuz(True,val,Pin)
+            else:
+                ServerRasp.AccionLuz(False,val,Pin)
+
+    else:
+        print ("el node")
 
 @app.route('/')
 @cross_origin()
@@ -355,7 +369,7 @@ def estadoLuz(idcuarto,idluz):
                     ####funcion cambio de luz de idluz a encender
                     socketio.emit('LuzCambio', (int(idluz),"Encendido"))
                     
-                    
+                    ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Enender",aux["Pin"])
                     # tpool.execute(imprimirsi)
                     # imprimirsi()
                     # print ("Encendido luz ",idluz,"gracias")
@@ -365,6 +379,7 @@ def estadoLuz(idcuarto,idluz):
                     if request.json['Estado']== 0 or request.json['Estado']=='Apagado':
                         OpInterruptor().modidificarEstadoiNT(idluz,'Apagado')
                         # imprimirsi()
+                        ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
                         socketio.emit('LuzCambio', (int(idluz),"Apagado"))
                         msg ="Apagando luz"  + str(idluz)+"gracias"
                         return (msg)
@@ -400,9 +415,9 @@ def addI(idcuarto):
     if (OpCuarto().buscaridcuarto(idcuarto)== True) :
 
          a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
-         if (val["Dispositivo"] == "Rasp"  ):
-            if val["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+         if (request.json["Dispositivo"] == "Rasp"  ):
+            if request.json["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
          return (a)
     else:
          return('error de cuarto')
@@ -486,9 +501,9 @@ def addcor(idcuarto):
         idcort=OpCortina().LastID() +1
         # print (request.json)
         b=OpCortina().insertarCortina(idcort,idcuarto,request.json["IdDisp"],request.json["Dispositivo"],request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
-        if (val["Dispositivo"] == "Rasp"  ):
-            if val["IdDisp"] == 0:
-                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+        if (request.json["Dispositivo"] == "Rasp"  ):
+            if request.json["IdDisp"] == 0:
+                ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
         return (b)
     else :
         return('no existe id de caurto ')
