@@ -26,7 +26,6 @@ class Rasp:
             self.arrayLuces=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
         
         GPIO.setwarnings(False)
-
         GPIO.setmode(GPIO.BCM)
      ######################### Init Luces  salidas Digitaes ############################################
         self.data_pin = Data14 #pin 14 on the 75HC595 es decir el ds2

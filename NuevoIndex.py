@@ -23,6 +23,7 @@ import subprocess
 import array
 from eventlet import tpool
 from Base import Cortina,Cuarto,Interruptor
+from RaspOp import Raspberry
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
 #from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
 from OperacionesWind import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
@@ -42,8 +43,14 @@ global DirFondos
 LinkArchivos=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Fondo"
 LinkArchivosDefault=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos\Default.png"
 ##################################################   RASP   #############
+<<<<<<< HEAD
 # LinkArchivos=r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Fondo"
 # LinkArchivosDefault= r"/home/pi/Desktop/Rpi1-2.1/Images/Fondos/Default.png"
+=======
+LinkArchivosDefault=r"/home/pi/Desktop/Rpi1/Images/Fondos/Default.png"
+LinkArchivos=r"/home/pi/Desktop/Rpi1/Images/Fondos/Fondo"
+
+>>>>>>> d037715a3b881159ac10eabbcd926df544ceb398
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
