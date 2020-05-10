@@ -1,4 +1,4 @@
-## V2
+## V2.1
 Version 2 Node ,ESP32,Raspberry ,IoT 
 
 Need a lot of sudo pip3 mtf :V , pronto te lo ire poniendo perro 
