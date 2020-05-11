@@ -45,7 +45,10 @@ global DirFondos
 ##################################################   RASP   #############
 LinkArchivosDefault=r"/home/pi/Desktop/Rpi1/Images/Fondos/Default.png"
 LinkArchivos=r"/home/pi/Desktop/Rpi1/Images/Fondos/Fondo"
-RaspberrysReg=[]
+
+RegistroRaspberry={}
+RegistroNode={}
+RegistroEsp32={}
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -172,50 +175,26 @@ def apiCuarto(idcuarto):
 #@cross_origin()
 #@cross_domain(origin='*')
 def add():
-    #print(request.data)
-    # print(request.json,"Es la reespuesta")
-    # a=request.json['idcuarto']
-   
-    # print(request.json)
+ #todos los json los cambiamos por forms para recivirlos mejor
     
-    #todos los json los cambiamos por forms para recivirlos mejor
+    a=OpCuarto().LastID()
+    a=a+1
     
-    if request.form['idcuarto'] !='' :
-        a=request.form['idcuarto']
-        
-        
-        a=int(a)
-        
-       
-        if  a >0 :
-            errorid=0
-            idscuartos=OpCuarto().MostrarCuartos()
-            for i  in range (0,len (idscuartos["idcuarto"])):
-                if (idscuartos['idcuarto'][i]== request.form['idcuarto']):
-                    errorid=1
-            
-            if errorid==0:
-                #print(request.form['Seleccion'] ,"este es el select ")
-                if(request.form['Seleccion']=='Si'):
-                    file=request.files['fondo']
-                    if file and allowed_file(file.filename):
-                            print("entro")
-                            f = request.files['fondo']
-                            concadenacion="Fondo"+request.form['nombre']+'.jpg'
-                            filename=secure_filename(concadenacion)
-                            f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-                            ruta=LinkArchivos
-                            ruta=ruta+request.form["nombre"]+".jpg"
-                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
-                else:
-                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha']))
-
+    if  a >=0 :
+            #print(request.form['Seleccion'] ,"este es el select ")
+            if(request.form['Seleccion']=='Si'):
+                file=request.files['fondo']
+                if file and allowed_file(file.filename):
+                        print("entro")
+                        f = request.files['fondo']
+                        concadenacion="Fondo"+request.form['nombre']+'.jpg'
+                        filename=secure_filename(concadenacion)
+                        f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+                        ruta=LinkArchivos
+                        ruta=ruta+request.form["nombre"]+".jpg"
+                return jsonify(OpCuarto().insertarCuarto(a,request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
             else:
-                
-                return "id de cuarto utilizado"
-    else:
-        return "error "
-
+                return jsonify(OpCuarto().insertarCuarto(a,request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha']))
 @app.route('/API/Cuarto/<string:idcuarto>/del' , methods=['DELETE'])
 def dele(idcuarto):
     print ("El resutado del delete es",OpCuarto().buscaridcuarto(idcuarto))
@@ -242,8 +221,6 @@ def mod(idcuarto):
         # if request.form["NDispositivos"]!='' and request.form["NDispositivos"]!=' ':
         #     OpCuarto().modificarCuarto(idcuarto,"NDispositivos",request.form["NDispositivos"])
 
-        if request.form["idcuarto"]!='' and request.form["idcuarto"]!=' ':
-            OpCuarto().modificarCuarto(idcuarto,"idcuarto",request.form["idcuarto"])
         if(request.form['Seleccion'])=='Si':
             print("entro a fondo")
             file=request.files['fondo']
@@ -403,10 +380,8 @@ def addI(idcuarto):
     if (OpCuarto().buscaridcuarto(idcuarto)== True) :
 
          a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
-         if (request.json["Dispositivo"] == "Rasp"  ):
-            if request.json["IdDisp"] == 1:
-                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
-                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+         if a =="agregado safisfactoriamente":
+                    AddGPIO(request.json["IdDisp"],request.json["Dispositivo"])
          return (a)
     else:
          return('error de cuarto')
@@ -490,10 +465,8 @@ def addcor(idcuarto):
         idcort=OpCortina().LastID() +1
         # print (request.json)
         b=OpCortina().insertarCortina(idcort,idcuarto,request.json["IdDisp"],request.json["Dispositivo"],request.json["Pinmotor"],request.json["PinSensor1"],request.json["PinSensor2"],request.json["Tipo"],request.json["Nombre"])
-        if (request.json["Dispositivo"] == "Rasp"  ):
-            if request.json["IdDisp"] == 0:
-                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
-                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(request.json["IdDisp"]))
+        if b =="Agregado Safisfactoriamente":
+                    AddGPIO(request.json["IdDisp"],request.json["Dispositivo"])
         return (b)
     else :
         return('no existe id de caurto ')
@@ -663,18 +636,22 @@ def addDisp(Disp):
     val=request.json
     if Disp == "Rasp":
         IoTconf= (val["IoT"])
-        if int(val["IdRasp"]) == 1 :
-                global ServerRasp
-                print (IoTconf)
-                #ServerRasp=Raspberry(1,IoTconf,int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"])))
-                RaspberrysReg.append(Raspberry(1,IoTconf,int(val["CantidadPWM"]),int(val["CantidadLuz"]),OpRasp().MostrarRaspEsp(int(val["IdRasp"]))))
+        RegDisp(int(val["IdRasp"]),"Rasp",IoTconf,int(val["CantidadPWM"]),int(val["CantidadLuz"]))
+        if not IsRegister(int(val["IdRasp"]),"Rasp"):
+            return ("No se creo Rasp")
 
         j= (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
         return j
     if Disp == "Node":
+        RegDisp(int(val["IdNode"]),"Node",0,0,0)
+        if not IsRegister(int(val["IdNode"]),"Node"):
+            return ("No se creo Node")
         js = (OpNode().InsertarNode(int(val["IdNode"]),int (val["IdCasa"]),val["Descripcion"]))
         return (js)
     if Disp == "Esp32":
+        RegDisp(int(val["IdEsp32"]),"Esp32",0,0,0)
+        if not IsRegister(int(val["IdEsp32"]),"Esp32"):
+            return ("No se creo Esp32")
         js = (OpEsp32().InsertarEsp32(int(val["IdEsp32"]),int (val["IdCasa"]),val["Descripcion"]))
         return (js)
     else:
@@ -754,22 +731,30 @@ def addLecIR():
             id=0
             if val["Dispositivo"]=="Node":
                 
-                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+                j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+                if j =="Lector Agregado Satisfactoriamente" :
+                    AddGPIO(val["IdDisp"],val["Dispositivo"])
+                return j
+
             else:
                 
                 j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
-                if val["Dispositivo"] == "Rasp" and j =="Lector Agregado Satisfactoriamente" :
-                    if val["IdDisp"==1]:
-                        RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
-                        #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(int(val["IdDisp"])))
+                if   j =="Lector Agregado Satisfactoriamente" :
+                    AddGPIO(val["IdDisp"],val["Dispositivo"])
                 return j
         else :
             id=id+1
             if val["Dispositivo"]=="Node":
                 
-                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+                j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],val["Pin"]))
+                if j =="Lector Agregado Satisfactoriamente" :
+                    AddGPIO(val["IdDisp"],val["Dispositivo"])
+                return j
             else:
-                return (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
+                j= (OpLecIR().InsertarLector(id,int(val["IdDisp"]),int(val["IdCasa"]),val["Dispositivo"],int(val["Pin"])))
+                if j =="Lector Agregado Satisfactoriamente" :
+                    AddGPIO(val["IdDisp"],val["Dispositivo"])
+                return j
         
     
     
@@ -804,17 +789,11 @@ def addConrolIR():
     if (val["Guardar"] == False or val["Guardar"] == "false"):
         
         j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],False,val["Tipo"]))
-        if (val["Dispositivo"] == "Rasp"  ):
-            if val["IdDisp"] == 1:
-                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
-                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+        AddGPIO(val["IdDisp"],val["Dispositivo"])
         return j
     else:
         j = (OpControl().InsertarControl(IdControl,val["IdDisp"],val["Marca"],val["Dispositivo"],val["Pin"],val["Nombre"],val["IdCuarto"],True,val["Tipo"]))
-        if (val["Dispositivo"] == "Rasp"  ):
-            if val["IdDisp"] == 0:
-                RaspberrysReg[0].AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
-                #ServerRasp.AddGpio(OpRasp().DevolverPinsOcupados(val["IdDisp"]))
+        AddGPIO(val["IdDisp"],val["Dispositivo"])
         return j
 
 @app.route('/API/ControlIR/<string:id>')
@@ -963,6 +942,60 @@ def RegNode():
 
 
 ################################################ OPERACIONES #####################################
+def AddGPIO( id,Dispositivo):
+    if Dispositivo == "Rasp":
+        if IsRegister (id,"Rasp"):
+            RegistroRaspberry[id].AddGpio(OpRasp().DevolverPinsOcupados(id))
+        else:
+            print ("no registrado")
+            return ("no registrado")
+    if Dispositivo == "Esp32":
+        if IsRegister (id,"Esp32"):
+            #RegistroRaspberry[id].AddGpio(OpRasp().DevolverPinsOcupados(id))
+            print ("falta")
+        else:
+            print ("no registrado")
+            return ("no registrado")        
+    if Dispositivo == "Node":
+        if IsRegister (id,"Node"):
+            #RegistroRaspberry[id].AddGpio(OpRasp().DevolverPinsOcupados(id))
+            print ("falta")
+        else:
+            print ("no registrado")
+            return ("no registrado")        
+def RegDisp(id,Dispositivo,IoT,CantPWm,CantLuces):
+    if Dispositivo == "Rasp":
+        if id ==1 :
+            new={id:Raspberry(id,IoT,CantLuces,CantPWm,OpRasp().MostrarRaspEsp(id))}
+            RegistroRaspberry.update(new)
+        else:
+            print ("No hay todavia para neuvas Raspberrys")
+
+    if Dispositivo == "Node":
+        print ("Falta Node")
+    if Dispositivo == "Esp32":
+        print ("Falta Esp32")
+      
+     
+def IsRegister(id,Disp):
+    if Disp == "Rasp":
+        if id in RegistroRaspberry.keys():
+            if RegistroRaspberry[id].Activado == True:
+                return True
+            else:
+                return False
+        else :
+            return False
+    if Disp == "Node":
+        print ("falta procesar")
+        return ("falta procesar")
+    if Disp == "Esp32":
+        print ("falta procesar")
+        return ("falta procesar") 
+
+
+# def ActuarMotor():
+
 def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
     print ("El pin es : ",Pin , "cON ACCION : ",Accion)
     if Accion =="Encendido" or Accion == True or Accion ==1 or Accion == "Encender":
@@ -970,16 +1003,35 @@ def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
     else:
         val ="Apagado"
     if Dispositivo == "Rasp" or Dispositivo == "IoT":
-        if IdDisp == 1 : 
+        if IsRegister(IdDisp,"Rasp") : 
             if Dispositivo == "IoT":
-                RaspberrysReg[0].AccionLuz(True,val,Pin)
+                if RegistroRaspberry[IdDisp].IoTfunc != 0:
+                    RegistroRaspberry[IdDisp].AccionLuz(True,val,Pin)
                 #ServerRasp.AccionLuz(True,val,Pin)
             else:
-                RaspberrysReg[0].AccionLuz(False,val,Pin)
+                RegistroRaspberry[IdDisp].AccionLuz(False,val,Pin)
                 #ServerRasp.AccionLuz(False,val,Pin)
 
     else:
-        print ("el node")
+        print ("el node y esp 32")
+def ReinicioFlaskDisp():
+    for x in OpRasp().MostrarRasps()["IdRasp"]:
+        RaspBase=OpRasp().MostrarRaspEsp(x)
+        IoTlist=[]
+        for key,val in RaspBase["PinesOcupados"].items():
+            Pin=int(key)
+            if  "IoT" in val:
+                if val !="IoT_I2C":
+                    IoTlist.append(Pin)
+        if not IsRegister(x,"Rasp"):
+            new = {x:Raspberry(x,IoTlist,RaspBase["Cantidad Interruptores/Luces"],RaspBase["Cantidad PWM"],RaspBase)}
+            RegistroRaspberry.update(new)
+            
+            #Hacer lo mismo para NODE ESP32
+             
+        
+
+
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
 @socketio.on('luz')                                                                                                                     #
 def hacer(accion):                                                                                                                      #
@@ -1152,7 +1204,9 @@ def leersensores(id):                                                           
 if __name__ == '__main__':
     
     #app.run(debug=True , host= '0.0.0.0', threaded=True)
+    ReinicioFlaskDisp()
     socketio.run(app,debug=True,host='0.0.0.0')
+
     tpool.killall()
     #
 

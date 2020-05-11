@@ -23,7 +23,7 @@ import subprocess
 import array
 from eventlet import tpool
 from Base import Cortina,Cuarto,Interruptor
-from Dispositivos import Raspberry
+#from Dispositivos import Raspberry
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
 #from Operaciones import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
 from OperacionesWind import OpCortina,OpCuarto,OpInterruptor,OpCasa,OpControl,OpMarcaControl,OpLecIR,OpNode,OpRasp,OpEsp32
@@ -171,49 +171,25 @@ def apiCuarto(idcuarto):
 #@cross_origin()
 #@cross_domain(origin='*')
 def add():
-    #print(request.data)
-    # print(request.json,"Es la reespuesta")
-    # a=request.json['idcuarto']
-   
-    # print(request.json)
     
-    #todos los json los cambiamos por forms para recivirlos mejor
-    
-    if request.form['idcuarto'] !='' :
-        a=request.form['idcuarto']
-        
-        
-        a=int(a)
-        
-       
-        if  a >0 :
-            errorid=0
-            idscuartos=OpCuarto().MostrarCuartos()
-            for i  in range (0,len (idscuartos["idcuarto"])):
-                if (idscuartos['idcuarto'][i]== request.form['idcuarto']):
-                    errorid=1
-            
-            if errorid==0:
-                #print(request.form['Seleccion'] ,"este es el select ")
-                if(request.form['Seleccion']=='Si'):
-                    file=request.files['fondo']
-                    if file and allowed_file(file.filename):
-                            print("entro")
-                            f = request.files['fondo']
-                            concadenacion="Fondo"+request.form['nombre']+'.jpg'
-                            filename=secure_filename(concadenacion)
-                            f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-                            ruta=LinkArchivos
-                            ruta=ruta+request.form["nombre"]+".jpg"
-                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
-                else:
-                    return jsonify(OpCuarto().insertarCuarto(request.form['idcuarto'],request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha']))
-
+    a=OpCuarto().LastID()
+    a=a+1
+    if  a >=0 :       
+            #print(request.form['Seleccion'] ,"este es el select ")
+            if(request.form['Seleccion']=='Si'):
+                file=request.files['fondo']
+                if file and allowed_file(file.filename):
+                        print("entro")
+                        f = request.files['fondo']
+                        concadenacion="Fondo"+request.form['nombre']+'.jpg'
+                        filename=secure_filename(concadenacion)
+                        f.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+                        ruta=LinkArchivos
+                        ruta=ruta+request.form["nombre"]+".jpg"
+                return jsonify(OpCuarto().insertarCuarto(a,request.form["idcasa"],request.form['nombre'],ruta,request.form['contrasenha']))
             else:
-                
-                return "id de cuarto utilizado"
-    else:
-        return "error "
+                return jsonify(OpCuarto().insertarCuarto(a,request.form["idcasa"],request.form['nombre'],'No',request.form['contrasenha']))
+
 
 @app.route('/API/Cuarto/<string:idcuarto>/del' , methods=['DELETE'])
 def dele(idcuarto):
@@ -241,8 +217,7 @@ def mod(idcuarto):
         # if request.form["NDispositivos"]!='' and request.form["NDispositivos"]!=' ':
         #     OpCuarto().modificarCuarto(idcuarto,"NDispositivos",request.form["NDispositivos"])
 
-        if request.form["idcuarto"]!='' and request.form["idcuarto"]!=' ':
-            OpCuarto().modificarCuarto(idcuarto,"idcuarto",request.form["idcuarto"])
+
         if(request.form['Seleccion'])=='Si':
             print("entro a fondo")
             file=request.files['fondo']
@@ -654,7 +629,8 @@ def addDisp(Disp):
     if Disp == "Rasp":
         
         
-        return (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
+        j= (OpRasp().InsertarRasp(int(val["IdRasp"]),val["IdCasa"],int(val["CantidadPWM"]),int(val["CantidadLuz"]), val["IoT"],val["Descripcion"]))
+        return j
     if Disp == "Node":
         js = (OpNode().InsertarNode(int(val["IdNode"]),int (val["IdCasa"]),val["Descripcion"]))
         return (js)

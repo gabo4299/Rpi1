@@ -1,7 +1,7 @@
 ## V2.1
 Version 2 Node ,ESP32,Raspberry ,IoT 
-
-Need a lot of sudo pip3 mtf :V , pronto te lo ire poniendo perro 
+## 2.1.2
+Necesitas vERIFICAR EN EL INDEX RPI las operaciones , estas usasndo dicts enves de listas falta el Updatear al iniciar
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
 ## Luces Cortinas Control IR
@@ -44,6 +44,8 @@ enable I2C
     pip install pymongo  or  pip install pymongo==2.4.2
 ### paho-mqtt         1.5.0
 
+### ServoKit 
+    sudo pip3 install adafruit-circuitpython-servokit
     
 ### recomend: 
 ###### VNC viewer: (https://www.raspberrypi.org/documentation/remote-access/vnc/) 

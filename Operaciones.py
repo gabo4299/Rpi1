@@ -1285,7 +1285,10 @@ class OpCuarto:
             for k, v in chain( var.items()):
                 auxdict[k].append(v)
 
-        return auxdict 
+        if  auxdict :
+            return auxdict
+        else : 
+            return "No Existen"
     def MostrarIds(self):
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName]
@@ -1427,7 +1430,14 @@ class OpCuarto:
             
             coleccion.update({ "idcuarto": id}, { "$inc": { "NDispositivos": -1 } })
             OpCasa().RestDisp(OpCuarto().MostrarCuartoEsp(id)["idcasa"])
-            
+    def LastID(self):
+        ints=OpCuarto().MostrarCuartos()
+        
+        if ints == "No Existen":
+            return -1
+        else :
+            tam = len (ints["idcuarto"])
+            return ints["idcuarto"][tam-1]
 
    #MostrarCuartos()
 
@@ -2621,7 +2631,8 @@ OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
 
 
 
-
+# for x in range  (0 ,len (OpRasp().MostrarRasps()["IdRasp"])):
+#     print (x)
 # OpControl().BorrarTodosCodigos(0,False)
 
 #solo faltaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  radio control , ventana , infrarojos , database de infrarojos ,sensor temp,etc

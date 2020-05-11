@@ -10,12 +10,12 @@ def ServoCagon(Pin,Dirc):
     if Dirc == "Arriba":
         p=GPIO.PWM(Pin,50)
         p.start(10.5)
-        for i in range (0,3000):
+        for i in range (0,30000):
             sleep(0.1)
     else:
         p=GPIO.PWM(Pin,50)
         p.start(4.5)
-        for i in range (0,3000):
+        for i in range (0,30000):
             sleep(0.1)
 
 def LecturaJson(RUTA,DircRp1,Nombre,Pin,Marca):
@@ -43,6 +43,8 @@ def LecturaJson(RUTA,DircRp1,Nombre,Pin,Marca):
 class Raspberry:
     def __init__ (self , IdRasp,IoT,Cant,CantPWM,BaseDeDatosRasp):
         self.IoTPins=IoT
+        if BaseDeDatosRasp["PinesOcupados"] :
+            self.AddGpio(BaseDeDatosRasp["PinesOcupados"])
         
         self.Id=IdRasp
         self.InfoRasp=BaseDeDatosRasp
@@ -57,16 +59,19 @@ class Raspberry:
             if len(IoT) == 3 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],0,0,0,0,0,0,0,0,0,0,Cant,CantPWM)
                 self.CantidadSen=0
+                self.Activado= True
                 print ("Completado")
                 
             if len(IoT) == 8 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],0,0,0,0,0,Cant,CantPWM)
                 self.CantidadSen=16
+                self.Activado= True
                 print ("Completado")
                 
             if len(IoT) == 13 :
                 self.IoTfunc = Rasp(IoT[0],IoT[1],IoT[2],IoT[3],IoT[4],IoT[5],IoT[6],IoT[7],IoT[8],IoT[9],IoT[10],IoT[11],IoT[12],Cant,CantPWM)
                 self.CantidadSen=32
+                self.Activado= True
                 print ("Completado")
                 
             else  :
@@ -81,7 +86,7 @@ class Raspberry:
         for k,v in dictDePinesOcupados.items():
             #print ("lA CADENA",v, "Empieza con IoT: ","IoT" in v)
             if not "IoT" in v:
-                print ("adicionando gṕio desde ADD GPIO , sin el IOT" )
+                print ("adicionando gṕio desde ADD GPIO , sin el IOT :",dictDePinesOcupados )
                 k=int (k)
                 if v == "Luz" or v == "OUTPUT":
                     GPIO.setup(k,GPIO.OUT)
@@ -91,9 +96,9 @@ class Raspberry:
                 if v == "Sensor" or v == "INPUT":
                     GPIO.setup(k,GPIO.IN)
                 if v == "LecIR" or v == "Lector":
-                    print ("aqui va el archivo de donwloads irrp.py")
+                    GPIO.setup(k,GPIO.IN)
                 if v == "Control" or v == "IR":
-                    print ("aqui va el archivo de donwloads irrp.py")
+                    GPIO.setup(k,GPIO.OUT)
 
     def AccionMotor(self ,IoTBool,Pin,Direccion):
         '''Subir Bajar ETC
@@ -158,21 +163,21 @@ class Raspberry:
                     
     def UpdateRaspInfo(self,Base):
         datos = self.InfoRasp ["PinesOcupados"]
-        # for k,v in Base.items():
+        for k,v in Base.items():
             
-        #     if not "IoT" in v and Pin == int (k):
-        #         k=int (k)
-        #         if v == "Luz" or v == "OUTPUT":
-        #             GPIO.setup(k,GPIO.OUT)
-        #         if v == "Motor" or v == "PWM":
-        #             GPIO.setup(k,GPIO.OUT)
+            if not "IoT" in v :
+                k=int (k)
+                if v == "Luz" or v == "OUTPUT":
+                    GPIO.setup(k,GPIO.OUT)
+                if v == "Motor" or v == "PWM":
+                    GPIO.setup(k,GPIO.OUT)
                     
-        #         if v == "Sensor" or v == "INPUT":
-        #             GPIO.setup(k,GPIO.IN)
-        #         if v == "LecIR" or v == "Lector":
-        #             print ("aqui va el archivo de donwloads irrp.py")
-        #         if v == "Control" or v == "IR":
-        #             print ("aqui va el archivo de donwloads irrp.py")
+                if v == "Sensor" or v == "INPUT":
+                    GPIO.setup(k,GPIO.IN)
+                if v == "LecIR" or v == "Lector":
+                    print ("aqui va el archivo de donwloads irrp.py")
+                if v == "Control" or v == "IR":
+                    print ("aqui va el archivo de donwloads irrp.py")
     
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :
