@@ -43,13 +43,15 @@ def LecturaJson(RUTA,DircRp1,Nombre,Pin,Marca):
 class Raspberry:
     def __init__ (self , IdRasp,IoT,Cant,CantPWM,BaseDeDatosRasp):
         self.IoTPins=IoT
-        if BaseDeDatosRasp["PinesOcupados"] :
-            self.AddGpio(BaseDeDatosRasp["PinesOcupados"])
+        if BaseDeDatosRasp:
+            if BaseDeDatosRasp["PinesOcupados"] :
+                self.AddGpio(BaseDeDatosRasp["PinesOcupados"])
         
         self.Id=IdRasp
         self.InfoRasp=BaseDeDatosRasp
         self.ServosFuncioando={}
         self.LectoresFuncionando={}
+        # 
         if IoT == 0 : 
             self.IoTfunc=0
             GPIO.setwarnings(False)
@@ -88,7 +90,7 @@ class Raspberry:
             if not "IoT" in v:
                 print ("adicionando gṕio desde ADD GPIO , sin el IOT :",dictDePinesOcupados )
                 k=int (k)
-                if v == "Luz" or v == "OUTPUT":
+                if v == "Luz" or v == "OUTPUT" or v == "OUT":
                     GPIO.setup(k,GPIO.OUT)
                 if v == "Motor" or v == "PWM":
                     GPIO.setup(k,GPIO.OUT)

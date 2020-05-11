@@ -966,7 +966,10 @@ def AddGPIO( id,Dispositivo):
 def RegDisp(id,Dispositivo,IoT,CantPWm,CantLuces):
     if Dispositivo == "Rasp":
         if id ==1 :
-            new={id:Raspberry(id,IoT,CantLuces,CantPWm,OpRasp().MostrarRaspEsp(id))}
+            if OpRasp().MostrarRaspEsp(id): 
+                new={id:Raspberry(id,IoT,CantLuces,CantPWm,OpRasp().MostrarRaspEsp(id))}
+            else :
+                new={id:Raspberry(id,IoT,CantLuces,CantPWm,False)}
             RegistroRaspberry.update(new)
         else:
             print ("No hay todavia para neuvas Raspberrys")
@@ -994,7 +997,8 @@ def IsRegister(id,Disp):
         return ("falta procesar") 
 
 
-# def ActuarMotor():
+#def ActuarMotor():
+    
 
 def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
     print ("El pin es : ",Pin , "cON ACCION : ",Accion)
