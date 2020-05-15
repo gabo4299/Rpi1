@@ -11,12 +11,12 @@ def ServoCagon(Pin,Dirc):
         p=GPIO.PWM(Pin,50)
         p.start(10.5)
         for i in range (0,30000):
-            sleep(0.1)
+            sleep(0.05)
     else:
         p=GPIO.PWM(Pin,50)
         p.start(4.5)
         for i in range (0,30000):
-            sleep(0.1)
+            sleep(0.05)
 
 def LecturaJson(RUTA,DircRp1,Nombre,Pin,Marca):
     cont=0
@@ -180,7 +180,25 @@ class Raspberry:
                     print ("aqui va el archivo de donwloads irrp.py")
                 if v == "Control" or v == "IR":
                     print ("aqui va el archivo de donwloads irrp.py")
-    
+    def SubirMotor(self,IoT,Pin):
+        '''IoT -----> Bool True or False  para saber si estas usando la placa IoT
+           Pin numero de Pin si es IoT del 0 a la cant de PWM sino el GPIO BCM'''
+        self.AccionMotor(IoT,Pin,"Arriba")
+        if IoT:
+            sleep(0.2)
+        else:
+            sleep(0.01)
+        self.AccionMotor(IoT,Pin,"Parar")
+    def BajarMotor(self,IoT,Pin):
+        '''IoT -----> Bool True or False  para saber si estas usando la placa IoT
+           Pin numero de Pin si es IoT del 0 a la cant de PWM sino el GPIO BCM'''
+        self.AccionMotor(IoT,Pin,"Abajo")
+        if IoT:
+            sleep(0.2)
+        else:
+            sleep(0.01)
+        self.AccionMotor(IoT,Pin,"Parar")
+
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :
             print ("encendiendo desde Accion luz con IOt BOOL ,CON ESTADO" , Accion)
@@ -200,17 +218,20 @@ class Raspberry:
         Pin=int (Pin)
         if IoTBool :
             if self.CantidadSen != 0:
-                if self.CantidadSen == 16 :
-                    if Pin >= (self.CantidadSen/2):
-                       print (self.IoTfunc.LeerSensor1(Pin) )
+                if self.CantidadSen == 32 :
+                    
+                    if Pin <= (self.CantidadSen/2):
+                        
+                       #print (self.IoTfunc.LeerSensor1(Pin) )
                        return (self.IoTfunc.LeerSensor1(Pin) )
                     else : 
                         pin2=Pin-16
-                        print (self.IoTfunc.LeerSensor2(pin2) )
+                        #print (self.IoTfunc.LeerSensor2(pin2) )
                         return (self.IoTfunc.LeerSensor2(pin2) )
 
                 else:
-                    print (self.IoTfunc.LeerSensor1(Pin) )
+                    #print ("son solo 16")
+                    #print (self.IoTfunc.LeerSensor1(Pin) )
                     return (self.IoTfunc.LeerSensor1(Pin) )
                     
                      
@@ -316,17 +337,75 @@ class NodeMCU:
 
 
 #
-#UNO=Raspberry(0,[21,20,16],8,16,False)
+UNO=Raspberry(1,[13,19,26,14,15,18,23,24,25,8,7,1,12],16,16,False)
+#
+#UNO.AccionLuz(True,"Apagar",0)
+UNO.AddGpio({21:"PWM"})
+#UNO.AccionMotor(False,21,"Parar")
+#UNO.AccionMotor(True,0,"Parar")
+#es pull uup entocnes la CondicionSensor es 1 sino es 0
+
+Condicion_Sensor=1
+#####Simulamos un totalmente arriba 1 si es pull uup
+#let=0
+#while (UNO.LeerSensor(True,0) == Condicion_Sensor):
+#    if let == 0 :
+#        UNO.AccionMotor(True,0,"Arriba")
+#        let = 1
+#UNO.AccionMotor(True,0,"Parar")
+let=0
+
+try:
+    while True:
+        val =input("1 Vas Arriba,2 vas a abajo,3 paras ,8arriba total 9 abajo total : ")
+        if int(val) == 1:
+            UNO.SubirMotor(True,0)
+        if int(val) == 2:
+            UNO.BajarMotor(True,0)
+        if int(val) == 3:
+            UNO.AccionMotor(True,0,"Parar")
+        if int(val) == 8:
+            while (UNO.LeerSensor(True,0) == Condicion_Sensor):
+                if let == 0 :
+                    UNO.AccionMotor(True,0,"Arriba")
+                    let = 1
+            UNO.AccionMotor(True,0,"Parar")
+            let = 0
+            print ("Se abrio total")
+        if int(val) == 9:
+            while (UNO.LeerSensor(True,1) == Condicion_Sensor):
+                if let == 0 :
+                    UNO.AccionMotor(True,0,"Abajo")
+                    let = 1
+            UNO.AccionMotor(True,0,"Parar")
+            let = 0
+            print ("Se Cerro total")
+except KeyboardInterrupt:
+    pass
+        
+#################FUNCION PARA ARRIBA O ABAJO 
+#x=0
+    #while x <= 25: #ESTE WHILE ES POR UNA PRECION COSNTANTE DE 5 SEG , PERO SE SUPE QUE CON ESTE SLEEP DE 0.2 RESPONDERA BIEN PARA EL SUBIR O BAJAR
+#           UNO.AccionMotor(True,0,"Arriba")
+            #sleep(0.2)
+            #x=x+1
+            #if (x%5==0):
+            #    print ("segundo")
+            #UNO.AccionMotor(True,0,"Parar")
+#           
+
+
+
 
 #UNO.AccionLuz(True,"Apagar",8)
 #UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
 
-#UNO.LeerCodigo(24,"Mute","Samsung")
 
-#UNO.MandarCodigoIR(23,"Off","Samsung")
+#print(UNO.LeerCodigo(27,"Mute","Samsung"))
+#UNO.MandarCodigoIR(5,"Off","Samsung")
 
 #sleep(10)
-#UNO.MandarCodigoIR(23,"Mute","Samsung")
+#UNO.MandarCodigoIR(5,"Mute","Samsung")
 
 #sleep(5)
 

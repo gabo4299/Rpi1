@@ -380,7 +380,7 @@ def addI(idcuarto):
     if (OpCuarto().buscaridcuarto(idcuarto)== True) :
 
          a=OpInterruptor().insertarInterruptor(ids  ,request.json["IdDisp"],request.json["Dispositivo"],idcuarto,request.json["Pin"],request.json["Dimmer"],request.json["Nombre"])
-         if a =="agregado safisfactoriamente":
+         if a =="agregado satisfacctoriamente":
                     AddGPIO(request.json["IdDisp"],request.json["Dispositivo"])
          return (a)
     else:
@@ -944,8 +944,11 @@ def RegNode():
 ################################################ OPERACIONES #####################################
 def AddGPIO( id,Dispositivo):
     if Dispositivo == "Rasp":
+        id = int (id)
         if IsRegister (id,"Rasp"):
+            
             RegistroRaspberry[id].AddGpio(OpRasp().DevolverPinsOcupados(id))
+
         else:
             print ("no registrado")
             return ("no registrado")
@@ -982,12 +985,17 @@ def RegDisp(id,Dispositivo,IoT,CantPWm,CantLuces):
      
 def IsRegister(id,Disp):
     if Disp == "Rasp":
-        if id in RegistroRaspberry.keys():
+        id=int(id)
+        #print ((int (id) in  RegistroRaspberry.keys()))
+        if int (id) in  RegistroRaspberry.keys():
+            #print ("entro al if in ")
             if RegistroRaspberry[id].Activado == True:
                 return True
             else:
+                
                 return False
         else :
+            #print ("No entro")
             return False
     if Disp == "Node":
         print ("falta procesar")

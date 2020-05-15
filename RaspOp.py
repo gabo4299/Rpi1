@@ -54,7 +54,7 @@ class Rasp:
             GPIO.setup(S1, GPIO.OUT)
             GPIO.setup(S2, GPIO.OUT)
             GPIO.setup(S3, GPIO.OUT)
-            GPIO.setup(l1, GPIO.IN)
+            GPIO.setup(l1, GPIO.IN,pull_up_down=GPIO.PUD_UP)
         else:
             print("No se configuro sensores 1 Register en esta Raspverry")
         if (SS0 and SS1 and SS2 and SS3 and l2  != 0):
@@ -62,7 +62,7 @@ class Rasp:
             GPIO.setup(SS1, GPIO.OUT)
             GPIO.setup(SS2, GPIO.OUT)
             GPIO.setup(SS3, GPIO.OUT)
-            GPIO.setup(l2, GPIO.IN)
+            GPIO.setup(l2, GPIO.IN,pull_up_down=GPIO.PUD_UP)
         else:
             print("No se configuro sensores 2 Register en esta Raspverry")
             
@@ -72,6 +72,8 @@ class Rasp:
         i2c = busio.I2C(board.SCL, board.SDA)
         pca = adafruit_pca9685.PCA9685(i2c)
         pca.frequency = 50
+        
+        
         # Set channels to the number of servo channels on your kit.
         # 8 for FeatherWing, 16 for Shield/HAT/Bonnet.
         if CantPWM != 0 : 
@@ -140,17 +142,17 @@ class Rasp:
 
     def AccionLuz(self):
         
-           print ("clocl %i, lacht %i, data%i",self.clock_pin,self.latch_pin,self.data_pin) 
+           print ("clock: " ,self.clock_pin, "lacht: ",self.latch_pin, "data: ",self.data_pin) 
            Rasp.BitLuz(self)
 
     #
     ####
     ###################sensores #################
     def Bin(self,decimal):
-        decimal=decimal-1
+        decimal=decimal
         binario = [0,0,0,0]
         cont=0
-        while decimal // 2 != 0:
+        while decimal // 2 != 0 :
             binario [cont]=(decimal % 2) 
             cont=cont+1
             decimal = decimal // 2
@@ -162,24 +164,17 @@ class Rasp:
         #print("y leer el pin tanto")
         return  binario
 
-
-
-
-    
-    
-    
     
     def LeerSensor1(self,NroSen):
         if(self.Sen0 != 0):
             # print("leendo >V ")
             sen=Rasp.Bin(self,int(NroSen))            
-            
             GPIO.output(self.Sen0, sen[0])
             GPIO.output(self.Sen1 , sen[1])
             GPIO.output(self.Sen2 , sen[2])
             GPIO.output(self.Sen3 , sen[3])
             lectura=GPIO.input(self.Lec1)
-            print (lectura)
+            #print (lectura)
             return (lectura)
         else:
             print("No Existe sensores 1 en esta raspberry ")
@@ -189,14 +184,14 @@ class Rasp:
         if (self.Sen20 != 0) :
             # print("leendo 2 >V 
 
-            sen=bin(int(NroSen))            
+            sen=Rasp.Bin(self,int(NroSen))            
             
             GPIO.output(self.Sen20, sen[0])
             GPIO.output(self.Sen21 , sen[1])
             GPIO.output(self.Sen22 , sen[2])
             GPIO.output(self.Sen23 , sen[3])
             lectura=GPIO.input(self.Lec2)
-            print (lectura)
+            #print (lectura)
             return (lectura)
         else:
             print("No Existe sensores 2 en esta raspberry ")
@@ -222,10 +217,36 @@ class Rasp:
 
  
 
-# R=Rasp(21,20,16,0,0,0,0,0,0,0,0,0,0,8)
-# R.setLUZ(8,1)
-# R.AccionLuz()
-# sleep(3)
+#R=Rasp(13,19,26,14,15,18,23,24,0,0,0,0,0,16,16) #para la fecha 13 de mayo este es para el lector 1 mas cerca al final del proto 
+#R=Rasp(13,19,26,14,15,18,23,24,25,8,7,1,12,16,16)
+#R.setLUZ(7,0)
+#R.AccionLuz()
+#print ("Sensor 1")
+#for x in range (16):
+    #print ("Pin ",x ,"Valor : ",R.LeerSensor1(x))
+#print ("\n","\n","\n")
+#print ("###################")
+#print ("Sensor 2")
+#for x in range (16):
+    #print ("Pin ",x ,"Valor : ",R.LeerSensor2(x))
+
+#try:
+    #while True  :
+        #for x in range (16):
+            #print ("Pin ",x ,"Valor : ",R.LeerSensor1(x))
+        #sleep(0.01) 
+#except KeyboardInterrupt:
+    #pass
+
+
+#try:
+#    while True:
+#        i=input ("Numero de sensor ")
+#        print ("Resultado sensor ",i, " es: ",R.LeerSensor1(i))
+#except KeyboardInterrupt:
+#    pass
+
+
 # print("Primer paasue")
 # R.setLUZ(8,0)
 # R.setLUZ(2,1)
