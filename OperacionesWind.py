@@ -1733,6 +1733,18 @@ class OpCortina:
                 return vaca
             if encontro==0:
                 return 0
+    def buscarCortinasPorCuarto(self,idcuarto):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]
+        auxdict= defaultdict(list)
+        for var in (coleccion.find({ "IdCuarto":idcuarto },{"_id":0}).sort("idcuarto",pymongo.ASCENDING)):
+            for k, v in chain( var.items()):
+                auxdict[k].append(v)
+
+        if auxdict :
+            return auxdict
+        else:
+            return "No Existen"
     def insertarCortina(self,IDCORTINA,IDCUARTO,IDDISPOSITIVO,Dispositivo,PINMOTOR,PINSENSOR1,PINSENSOR2,TIPO,NOMBRE):
         db = cliente[NombreBase]
         PINSENSOR1=int(PINSENSOR1)

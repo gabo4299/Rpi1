@@ -337,15 +337,15 @@ class NodeMCU:
 
 
 #
-UNO=Raspberry(1,[13,19,26,14,15,18,23,24,25,8,7,1,12],16,16,False)
+#UNO=Raspberry(1,[13,19,26,14,15,18,23,24,25,8,7,1,12],16,16,False)
 #
 #UNO.AccionLuz(True,"Apagar",0)
-UNO.AddGpio({21:"PWM"})
+#UNO.AddGpio({21:"PWM"})
 #UNO.AccionMotor(False,21,"Parar")
 #UNO.AccionMotor(True,0,"Parar")
 #es pull uup entocnes la CondicionSensor es 1 sino es 0
 
-Condicion_Sensor=1
+#Condicion_Sensor=1
 #####Simulamos un totalmente arriba 1 si es pull uup
 #let=0
 #while (UNO.LeerSensor(True,0) == Condicion_Sensor):
@@ -353,35 +353,35 @@ Condicion_Sensor=1
 #        UNO.AccionMotor(True,0,"Arriba")
 #        let = 1
 #UNO.AccionMotor(True,0,"Parar")
-let=0
+#let=0
 
-try:
-    while True:
-        val =input("1 Vas Arriba,2 vas a abajo,3 paras ,8arriba total 9 abajo total : ")
-        if int(val) == 1:
-            UNO.SubirMotor(True,0)
-        if int(val) == 2:
-            UNO.BajarMotor(True,0)
-        if int(val) == 3:
-            UNO.AccionMotor(True,0,"Parar")
-        if int(val) == 8:
-            while (UNO.LeerSensor(True,0) == Condicion_Sensor):
-                if let == 0 :
-                    UNO.AccionMotor(True,0,"Arriba")
-                    let = 1
-            UNO.AccionMotor(True,0,"Parar")
-            let = 0
-            print ("Se abrio total")
-        if int(val) == 9:
-            while (UNO.LeerSensor(True,1) == Condicion_Sensor):
-                if let == 0 :
-                    UNO.AccionMotor(True,0,"Abajo")
-                    let = 1
-            UNO.AccionMotor(True,0,"Parar")
-            let = 0
-            print ("Se Cerro total")
-except KeyboardInterrupt:
-    pass
+#try:
+#    while True:
+#        val =input("1 Vas Arriba,2 vas a abajo,3 paras ,8arriba total 9 abajo total : ")
+#        if int(val) == 1:
+#            UNO.SubirMotor(False,21)
+#        if int(val) == 2:
+#            UNO.BajarMotor(False,21)
+#        if int(val) == 3:
+#            UNO.AccionMotor(True,0,"Parar")
+#        if int(val) == 8:
+#            while (UNO.LeerSensor(True,0) == Condicion_Sensor):
+#                if let == 0 :
+#                    UNO.AccionMotor(True,0,"Arriba")
+#                    let = 1
+#            UNO.AccionMotor(True,0,"Parar")
+#            let = 0
+#            print ("Se abrio total")
+#        if int(val) == 9:
+#            while (UNO.LeerSensor(True,1) == Condicion_Sensor):
+#                if let == 0 :
+#                    UNO.AccionMotor(True,0,"Abajo")
+#                    let = 1
+#            UNO.AccionMotor(True,0,"Parar")
+#            let = 0
+#            print ("Se Cerro total")
+#except KeyboardInterrupt:
+#    pass
         
 #################FUNCION PARA ARRIBA O ABAJO 
 #x=0

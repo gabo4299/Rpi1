@@ -17,6 +17,7 @@
 '''
 from flask import Flask, render_template , request, jsonify
 from flask_socketio import SocketIO , send  , emit
+import multiprocessing
 import threading 
 import time   
 import subprocess
@@ -35,7 +36,8 @@ from werkzeug.utils import secure_filename
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 cont=1
-
+#la lectura de sensores es clave id de cuarto leyendose ,y valor proceso en funcion
+LecturaDeSensores={}        
 global DirFondos
 # UPLOAD_FOLDER ='Images/Fondos'
 # UPLOAD_FOLDER= "C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos"
@@ -1040,10 +1042,31 @@ def ReinicioFlaskDisp():
             RegistroRaspberry.update(new)
             
             #Hacer lo mismo para NODE ESP32
-             
-        
 
+def leerSensoresCortina(idCuarto,cortinas):
+    #nuevo proceso es este 
+    while True:
+        print ("")
+        time.sleep(2)
 
+#para empezar a leer por cuarto seria con un socketIO.ON empiezas a leer toods los sensores de este cuarto y los vas cambiando 
+#empiezas proceso para leer senspores y guarads el id del cuarto funcionando aqui
+@socketio.on("Estado_Cortinas_Cuarto")
+def LeerSensoresCuarto(idcuarto,IDscortinas):
+    idcuarto=idcuarto[0]
+    proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
+    proceso.start()
+    newprocess={idcuarto:proceso}
+    LecturaDeSensores.update(newprocess)
+    print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
+    
+@socketio.on("Stop_Lec")
+def DejarDeLeerSens(idcuarto):
+    print ("entraste")
+    idcuarto=int(idcuarto)
+    if idcuarto in LecturaDeSensores.keys():
+        LecturaDeSensores[idcuarto].terminate()
+        del LecturaDeSensores[idcuarto]
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
 @socketio.on('luz')                                                                                                                     #
 def hacer(accion):                                                                                                                      #
