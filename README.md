@@ -63,6 +63,9 @@ enable I2C
 . <( wget -O - https://code.headmelted.com/installers/apt.sh )
     sudo apt install code-oss
 
+#### Para que funcione el lector y control de IR
+    sudo pigpiod
+
 
 
 ### Para que lo veas :v 
