@@ -1046,27 +1046,58 @@ def ReinicioFlaskDisp():
 def leerSensoresCortina(idCuarto,cortinas):
     #nuevo proceso es este 
     while True:
-        print ("")
-        time.sleep(2)
+        
+        print ("leendo :V")
+        for x in cortinas["IdCortina"]:
+            EstadoSen1='false'
+            EstadoSen2='false'
+            cortActual=OpCortina().buscarIdCortina(x)
+            sen1=cortActual["PinSensor1"]
+            sen2=cortActual["PinSensor1"]
+            if cortActual["Dispositivo"] == "Rasp":
+                EstadoSen1=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(False,sen1)
+                EstadoSen2=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(False,sen2)
+            if cortActual["Dispositivo"] == "IoT":
+                EstadoSen1=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(True,sen1)
+                EstadoSen2=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(True,sen2)
+            if cortActual["Dispositivo"] == "Node":
+                print ("node")
+            if cortActual["Dispositivo"] == "Esp32":
+                print ("Esp")
+            if EstadoSen1 != 'false' and EstadoSen2 != 'false':
+                if EstadoSen1 == 0 and  EstadoSen2 == 0:
+                    OpCortina().modidificarEstadoCortina(IdCortina,'Semi')
+                    socketio.emit('CortinaCambio', (int(x),'Semi'))
+                if EstadoSen1 == 1 and EstadoSen2 == 0 :
+                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
+                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
+                if EstadoSen1 == 0 and EstadoSen2 == 1 :
+                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
+                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
 
-#para empezar a leer por cuarto seria con un socketIO.ON empiezas a leer toods los sensores de este cuarto y los vas cambiando 
-#empiezas proceso para leer senspores y guarads el id del cuarto funcionando aqui
+####par aq func el multiproces
 @socketio.on("Estado_Cortinas_Cuarto")
 def LeerSensoresCuarto(idcuarto,IDscortinas):
     idcuarto=idcuarto[0]
-    proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
-    proceso.start()
-    newprocess={idcuarto:proceso}
-    LecturaDeSensores.update(newprocess)
-    print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
+    if int(idcuarto) not in LecturaDeSensores.keys():
+        proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
+        proceso.start()
+        newprocess={int(idcuarto):proceso}
+        LecturaDeSensores.update(newprocess)
+        print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
+    else:
+        print ("nega")
     
 @socketio.on("Stop_Lec")
 def DejarDeLeerSens(idcuarto):
-    print ("entraste")
+    print ("entraste id cuarto es" ,idcuarto)
     idcuarto=int(idcuarto)
     if idcuarto in LecturaDeSensores.keys():
         LecturaDeSensores[idcuarto].terminate()
         del LecturaDeSensores[idcuarto]
+        print ("levturas :",LecturaDeSensores)
+    else:
+        print ("keys :",LecturaDeSensores.keys())
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
 @socketio.on('luz')                                                                                                                     #
 def hacer(accion):                                                                                                                      #

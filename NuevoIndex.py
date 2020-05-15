@@ -15,6 +15,7 @@
 #y con eso tenemos 2 pulsadores sin necesidad de otra placa 
 # aahora para leerlo es la joda  :v  puedes leer el resultado  con puta nose 
 '''
+import multiprocessing
 from flask import Flask, render_template , request, jsonify
 from flask_socketio import SocketIO , send  , emit
 import threading 
@@ -45,7 +46,7 @@ LinkArchivosDefault=r"C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para 
 ##################################################   RASP   #############
 #LinkArchivosDefault=r"/home/pi/Desktop/Rpi1/Images/Fondos/Default.png"
 #LinkArchivos=r"/home/pi/Desktop/Rpi1/Images/Fondos/Fondo"
-
+LecturaDeSensores={}
 UPLOAD_FOLDER= "./Images/Fondos/"
 app.config['SECRET_KEY']='secret'
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
@@ -905,8 +906,34 @@ def RegNode():
     # return(jsonify("{message:'yes'}"))
     return ("Si")
 
-
-
+def leerSensoresCortina(idCuarto,cortinas):
+    #nuevo proceso es este 
+    while True:
+        print ("leendo : " ,cortinas["IdCortina"])
+        time.sleep(2)
+####par aq func el multiproces
+@socketio.on("Estado_Cortinas_Cuarto")
+def LeerSensoresCuarto(idcuarto,IDscortinas):
+    idcuarto=idcuarto[0]
+    if int(idcuarto) not in LecturaDeSensores.keys():
+        proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
+        proceso.start()
+        newprocess={int(idcuarto):proceso}
+        LecturaDeSensores.update(newprocess)
+        print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
+    else:
+        print ("nega")
+    
+@socketio.on("Stop_Lec")
+def DejarDeLeerSens(idcuarto):
+    print ("entraste id cuarto es" ,idcuarto)
+    idcuarto=int(idcuarto)
+    if idcuarto in LecturaDeSensores.keys():
+        LecturaDeSensores[idcuarto].terminate()
+        del LecturaDeSensores[idcuarto]
+        print ("levturas :",LecturaDeSensores)
+    else:
+        print ("keys :",LecturaDeSensores.keys())
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
 @socketio.on('luz')                                                                                                                     #
 def hacer(accion):                                                                                                                      #
