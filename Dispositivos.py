@@ -5,6 +5,7 @@ import multiprocessing
 import  subprocess
 import json
 import os
+from Operaciones import OpCortina
 Mesage_Control=""
 def ServoCagon(Pin,Dirc):
     if Dirc == "Arriba":
@@ -51,6 +52,7 @@ class Raspberry:
         self.InfoRasp=BaseDeDatosRasp
         self.ServosFuncioando={}
         self.LectoresFuncionando={}
+        self.MotoresToT={}
         # 
         if IoT == 0 : 
             self.IoTfunc=0
@@ -162,7 +164,30 @@ class Raspberry:
                     self.ServosFuncioando[Pin].terminate()
                     p.stop()
                     del self.ServosFuncioando[Pin]
-                    
+    def SubirTodoMotor(self,IoTBool,idcortina):
+        cont=0
+        let=0
+        while(self.LeerSensor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["PinSensor1"]) ==1 and cont <= 200):
+            if let == 0:
+                self.AccionMotor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["Pinmotor"],"Arriba")
+                let=1
+            sleep(0.05)
+            cont=cont+1
+        self.AccionMotor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["Pinmotor"],"Parar")
+        if int(idcortina) in  self.MotoresToT.keys():
+            del self.MotoresToT[int(idcortina)]
+    def BajarTodoMotor(self,IoTBool,idcortina):
+        cont=0
+        let=0
+        while(self.LeerSensor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["PinSensor2"])==1 and cont <= 200):
+            if let == 0:
+                self.AccionMotor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["Pinmotor"],"Arriba")
+                let=1
+            sleep(0.05)
+            cont=cont+1
+        self.AccionMotor(IoTBool,OpCortina().buscarIdCortina(int(idcortina))["Pinmotor"],"Parar")
+        if int(idcortina) in  self.MotoresToT.keys():
+            del self.MotoresToT[int(idcortina)]
     def UpdateRaspInfo(self,Base):
         datos = self.InfoRasp ["PinesOcupados"]
         for k,v in Base.items():
@@ -185,7 +210,7 @@ class Raspberry:
            Pin numero de Pin si es IoT del 0 a la cant de PWM sino el GPIO BCM'''
         self.AccionMotor(IoT,Pin,"Arriba")
         if IoT:
-            sleep(0.2)
+            sleep(0.18)
         else:
             sleep(0.01)
         self.AccionMotor(IoT,Pin,"Parar")
@@ -194,10 +219,25 @@ class Raspberry:
            Pin numero de Pin si es IoT del 0 a la cant de PWM sino el GPIO BCM'''
         self.AccionMotor(IoT,Pin,"Abajo")
         if IoT:
-            sleep(0.2)
+            sleep(0.18)
         else:
             sleep(0.01)
         self.AccionMotor(IoT,Pin,"Parar")
+    def AccionTotalMotor(self,IoT,IdCor,Dirc):
+        IdCor=int(IdCor)
+        if Dirc =="Arriba" or Dirc == "Abrir":
+            if  IdCor not in self.MotoresToT.keys() or  not self.MotoresToT[IdCor].is_alive():
+                proceso= multiprocessing.Process(target=self.SubirTodoMotor,args=(IoT,IdCor,)) 
+                proceso.start()
+                new={IdCor:proceso}
+                self.MotoresToT.update(new)
+        if Dirc =="Abajo" or Dirc == "Cerrar":
+            if  IdCor not in self.MotoresToT.keys() or  not self.MotoresToT[IdCor].is_alive():
+                proceso= multiprocessing.Process(target=self.BajarTodoMotor,args=(IoT,IdCor,)) 
+                proceso.start()
+                new={IdCor:proceso}
+                self.MotoresToT.update(new)
+
 
     def AccionLuz(self,IoTBool,Accion,Pin):
         if IoTBool :
@@ -325,6 +365,7 @@ class Raspberry:
         StringPin= "-g"+str(Pin)
         rutaIR="Lector/irrp_IoT_Rasp.py"
         Archivo="-f"+Marca
+        print ("Debuuuuuuuuuug entro aqui al IR con Pin: ",Pin," Codigo : ",Codigo," Marca: ",Marca)
         MandIR= subprocess.Popen(['python', rutaIR,'-p',StringPin, Archivo,Codigo])
          
 
@@ -344,7 +385,13 @@ class NodeMCU:
 #UNO.AccionMotor(False,21,"Parar")
 #UNO.AccionMotor(True,0,"Parar")
 #es pull uup entocnes la CondicionSensor es 1 sino es 0
-
+#UNO.AccionTotalMotor(True,0,"Arriba")
+#print (UNO.MotoresToT)
+#for i in range (5):
+#    print(i+1,"segs y el poceso es"  )
+#    sleep(1)
+#print (UNO.MotoresToT)
+#UNO.AccionTotalMotor(True,0,"Abajo")
 #Condicion_Sensor=1
 #####Simulamos un totalmente arriba 1 si es pull uup
 #let=0
@@ -401,7 +448,7 @@ class NodeMCU:
 #UNO.AddGpio({2:"IoT_Si",25:"Luz",5:"PWM"})
 
 
-#print(UNO.LeerCodigo(27,"Mute","Samsung"))
+#print(UNO.LeerCodigo(27,"Sleep","Samsung"))
 #UNO.MandarCodigoIR(5,"Off","Samsung")
 
 #sleep(10)

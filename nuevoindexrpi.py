@@ -540,22 +540,24 @@ def estadocor(idcuarto,IdCortina):
                 if request.method == 'POST':
                     if request.json["Cambiar"]=="Si" :
                         if request.json["Estado"]== 'Abierto':
-                            print("subir completamente  id:" , int(IdCortina))
-                            OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
-                            socketio.emit('CortinaCambio', (int(IdCortina),request.json["Estado"]))
+                            #print("subir completamente  id:" , int(IdCortina) ,"Accion:",request.json["Accion"],"estado ant",request.json["EstadoAntiguo"])
+                            ActuarMotor(IdCortina,request.json["Accion"],"Cerrado")
+                            #OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
+                            #socketio.emit('CortinaCambio', (int(IdCortina),request.json["Estado"]))
                             
                             return ("Estado Cambiador a Abierto")
                         if request.json["Estado"]== 'Semi':
-                            print("Subir bajar  UN poco  parametros")
+                            ActuarMotor(IdCortina,request.json["Accion"],request.json["EstadoAntiguo"])
                             OpCortina().modidificarEstadoCortina(IdCortina,'Semi')
                             socketio.emit('CortinaCambio', (int(IdCortina),request.json["Estado"]))
                             return ("Estado Cambiador a Semi")
                         if request.json["Estado"]== 'Cerrado':
-                            print("Bajar completamente ")
-                            OpCortina().modidificarEstadoCortina(IdCortina,'Cerrado')
-                            socketio.emit('CortinaCambio', (int(IdCortina),request.json["Estado"]))
+                            ActuarMotor(IdCortina,request.json["Accion"],"Abierto")
+                            #OpCortina().modidificarEstadoCortina(IdCortina,'Cerrado')
+                            #socketio.emit('CortinaCambio', (int(IdCortina),request.json["Estado"]))
                             return ("Estado Cambiador a Cerrado")   
                     else:
+                        #este con cambiar no es para cuado esta en semi se nbaja o se sube
                         if request.json["Estado"]== 'Abierto':
                             print("subiendo hacer sub la cortina ")
                             return("subiendo hacer sub la cortina ")
@@ -563,7 +565,7 @@ def estadocor(idcuarto,IdCortina):
                             print("bajado hacer bajar la cortina ")
                             return("bajado hacer bajar la cortina ")
                         if request.json["Estado"]== 'Semi':
-                            print("Subir bajar  UN poco  parametros")
+                            ActuarMotor(IdCortina,request.json["Accion"],"Semi")
                             return("Subir bajar  UN poco  parametros")
 
                 else:
@@ -911,12 +913,13 @@ def DeleteAllCodesControls(id):
 def mandarIR(id,NameCommand):
     cont =OpControl().BuscarControl(int(id))
     if cont!=0:
-        
-        if cont["Codigos"][NameCommand]:
-            print("Si existe necesitas ahora envairlo al rasp" )
-            return ("Si existe") 
-        else :
-            return ("No se registro Codigo")
+        if IsRegister(cont["IdDisp"],cont["Dispositivo"]):
+            if cont["Codigos"][NameCommand]:
+                if cont["Dispositivo"] == "Rasp":
+                    RegistroRaspberry[cont["IdDisp"]].MandarCodigoIR(cont["Pin"], NameCommand,cont["Marca"])
+                    return ("Si existe") 
+            else :
+                return ("No se registro Codigo")
     else:
         return("Error no existe Control")
 @app.route('/API/ControlIR/<string:id>/LecIR/<string:LecIR>/<string:Name>')
@@ -1010,8 +1013,50 @@ def IsRegister(id,Disp):
         return ("falta procesar") 
 
 
-#def ActuarMotor():
+
+def ActuarMotor(idcortina,accion,estadoAnt):
+    '''Accion --->  tipos Abajo Arriba Todo , el estado anterior es prar todo'''
+    Cortina=OpCortina().buscarIdCortina(idcortina)
+    if accion == "Abajo" and OpCortina().buscarIdCortina(idcortina)["Estado"] != "Cerrado":
+        
+        if Cortina["Dispositivo"] == "Rasp":
+            RegistroRaspberry[Cortina["IdDisp"]].BajarMotor(False,Cortina["Pinmotor"])
+        if Cortina["Dispositivo"] == "IoT":
+            RegistroRaspberry[Cortina["IdDisp"]].BajarMotor(True,Cortina["Pinmotor"])
+        if Cortina["Dispositivo"] == "Esp32":
+            print ("nega esp32")
+        if Cortina["Dispositivo"] == "Node":
+            print ("nega Node")
+    if accion == "Arriba"and OpCortina().buscarIdCortina(idcortina)["Estado"] != "Abierto":
+        if Cortina["Dispositivo"] == "Rasp":
+            RegistroRaspberry[Cortina["IdDisp"]].SubirMotor(False,Cortina["Pinmotor"])
+        if Cortina["Dispositivo"] == "IoT":
+            RegistroRaspberry[Cortina["IdDisp"]].SubirMotor(True,Cortina["Pinmotor"])
+        if Cortina["Dispositivo"] == "Esp32":
+            print ("nega esp32")
+        if Cortina["Dispositivo"] == "Node":
+            print ("nega Node")
+    if accion == "Todo":
+        if Cortina["Dispositivo"] == "Rasp":
+            if estadoAnt == "Cerrado":
+                RegistroRaspberry[Cortina["IdDisp"]].AccionTotalMotor(False,int(idcortina),"Arriba")
+            else:
+                if estadoAnt == "Abierto":
+                    RegistroRaspberry[Cortina["IdDisp"]].AccionTotalMotor(False,int(idcortina),"Abajo")
+            
+        if Cortina["Dispositivo"] == "IoT":
+            if estadoAnt == "Cerrado":
+                RegistroRaspberry[Cortina["IdDisp"]].AccionTotalMotor(True,int(idcortina),"Arriba")
+            else:
+                if estadoAnt == "Abierto":
+                    RegistroRaspberry[Cortina["IdDisp"]].AccionTotalMotor(True,int(idcortina),"Abajo")
+        if Cortina["Dispositivo"] == "Esp32":
+            print ("nega esp32")
+        if Cortina["Dispositivo"] == "Node":
+            print ("nega Node")
     
+
+
 
 def ActuarLuz(idLuz,Dispositivo,IdDisp,Accion,Pin):
     print ("El pin es : ",Pin , "cON ACCION : ",Accion)
@@ -1048,14 +1093,14 @@ def ReinicioFlaskDisp():
 
 def leerSensoresCortina(idCuarto,cortinas):
     #nuevo proceso es este 
-    while KillearHilo[int(idCuarto)]==0::
+    while KillearHilo[int(idCuarto)]==0:
         
         
         for x in cortinas["IdCortina"]:
             EstadoSen1='false'
             EstadoSen2='false'
-            
-            cortActual=OpCortina().buscarIdCortina(x)
+            time.sleep(0.02)
+            cortActual=OpCortina().buscarIdCortina( int (x))
             sen1=cortActual["PinSensor1"]
             sen2=cortActual["PinSensor2"]
             EstadoCortina=cortActual["Estado"]
@@ -1083,36 +1128,22 @@ def leerSensoresCortina(idCuarto,cortinas):
             ######
             if EstadoSen1 != 'false' and EstadoSen2 != 'false':
                 if EstadoSen1 == 0 and  EstadoSen2 == 0:
-<<<<<<< HEAD
-                    if EstadoCortina != 'Semi':
-                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
+                    if EstadoCortina != "Semi":
                         OpCortina().modidificarEstadoCortina(x,'Semi')
                         socketio.emit('CortinaCambio', (int(x),'Semi'))
                 if EstadoSen1 == 1 and EstadoSen2 == 0 :
-                    if EstadoCortina != 'Abierto':
-                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
-                        socketio.emit('CortinaCambio', (int(x),'Abierto'))
+                    if EstadoCortina != "Abierto":
                         OpCortina().modidificarEstadoCortina(x,'Abierto')
+                        socketio.emit('CortinaCambio', (int(x),'Abierto'))
                 if EstadoSen1 == 0 and EstadoSen2 == 1 :
-                    if EstadoCortina != 'Cerrado':    
-                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
-                        socketio.emit('CortinaCambio', (int(x),'Cerrado'))
+                    if EstadoCortina != "Cerrado":
                         OpCortina().modidificarEstadoCortina(x,'Cerrado')
-                time.sleep(0.02)
-=======
-                    OpCortina().modidificarEstadoCortina(X,'Semi')
-                    socketio.emit('CortinaCambio', (int(x),'Semi'))
-                if EstadoSen1 == 1 and EstadoSen2 == 0 :
-                    OpCortina().modidificarEstadoCortina(X,'Abierto')
-                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
-                if EstadoSen1 == 0 and EstadoSen2 == 1 :
-                    OpCortina().modidificarEstadoCortina(X,'Abierto')
-                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
->>>>>>> 1509a6513d1d29bdde54a3c8bcf4e8fbb1eaed7d
+                        socketio.emit('CortinaCambio', (int(x),'Cerrado'))
 
 ####par aq func el multiproces
 @socketio.on("Estado_Cortinas_Cuarto")
 def LeerSensoresCuarto(idcuarto,IDscortinas):
+    print ("si llega")
     idcuarto=idcuarto[0]
     if int(idcuarto) not in LecturaDeSensores.keys() or KillearHilo[int(idcuarto)]==1:
         newkill={int(idcuarto):0}

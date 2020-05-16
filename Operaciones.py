@@ -2627,6 +2627,7 @@ class OpLecIR:
 #OpMarcaControl().EliminarMarca("Samsung")
 with open('MarcasSis.json') as file:
      MarcSis = json.load(file)
+     #print (MarcSis["Samsung"])
 OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
 # print (OpLecIR().InsertarLector(1,1,1,"Rasp",9))
 # OpCasa().insertarCasa(1,"Gabo",124.11)
