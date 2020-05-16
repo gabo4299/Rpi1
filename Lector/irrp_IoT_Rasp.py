@@ -460,7 +460,7 @@ else: # Playback.
    except:
       print("Can't open: {}".format(FILE))
       exit(0)
-
+   
    records = json.load(f)
 
    f.close()

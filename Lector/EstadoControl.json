@@ -1,6 +1,7 @@
 {
-    "Confirmado": false, 
-    "Mensaje": "Press key", 
-    "Estado": "Activo", 
-    "Guardado": false
+    "Estado": "Activo",
+    "Mensaje": "Okay",
+    "Confirmado": false,
+    "Guardado": true,
+    "Confirm": true
 }
