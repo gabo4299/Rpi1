@@ -1,7 +1,8 @@
 ## V2.1
 Version 2 Node ,ESP32,Raspberry ,IoT 
-## 2.1.2
-Necesitas vERIFICAR EN EL INDEX RPI las operaciones , estas usasndo dicts enves de listas falta el Updatear al iniciar
+## 2.1.3
+falta el lector de control y solucionar  las marcas
+
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
 ## Luces Cortinas Control IR
