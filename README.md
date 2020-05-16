@@ -5,13 +5,13 @@ falta el lector de control y solucionar  las marcas
 
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
+En raspberry no funciona el dimmer
 ## Luces Cortinas Control IR
 los controles IR y Lectores no sse pueden utiliazar en IoT
 
 ##Funcionando:
 Falta todo disp de Nodes y Esp32 
-De rasp falta y o o funciona el Dimmer 
-se anhadio el Lector Para la raspberry para q funcione !! 
+Rasp falta lector control funcionar con todo
 http://abyz.me.uk/rpi/pigpio/examples.html#Python_irrp_py
 
 
@@ -19,6 +19,7 @@ http://abyz.me.uk/rpi/pigpio/examples.html#Python_irrp_py
 dont use the [raspbian-nspawn-64] 
 enable the ssh
 enable I2C
+sudo pigpiod
 
 ### Necesary: 
 ###### Mongo: (solamente la version 2.4 ya que despues no es valido para 64 bits , si instalas el raspbian nspawn no dara 05/2020 )
