@@ -23,6 +23,8 @@ import time
 import subprocess
 import array
 from eventlet import tpool
+import eventlet
+eventlet.monkey_patch()
 from Base import Cortina,Cuarto,Interruptor
 #from Dispositivos import Raspberry
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
@@ -60,7 +62,7 @@ def LuzEncenderApagar(posicion,cambio,array):
 
 # CORS(app, sources=r'/API/*')
 CORS(app, resources={r"/api/*": {"Access-Control-Allow-Origin": "*"}})
-socketio=SocketIO(app)
+socketio=SocketIO(app,async_mode='eventlet')
 socketio.init_app(app, cors_allowed_origins="*")
 
 #falta en (app,async mode='threading") 
@@ -850,7 +852,6 @@ def ModControl(id):
 
 
 
-
 @app.route('/API/ControlIR/<string:id>/delCode/<string:NameCommand>' )
 def DeleteCodigoControl(id,NameCommand):
     e=OpControl().BorrarCodigo(int(id),str(NameCommand))
@@ -906,32 +907,55 @@ def RegNode():
     # return(jsonify("{message:'yes'}"))
     return ("Si")
 
-def leerSensoresCortina(idCuarto,cortinas):
-    #nuevo proceso es este 
-    while True:
-        print ("leendo : " ,cortinas["IdCortina"])
-        time.sleep(2)
+KillearHilo={}
 ####par aq func el multiproces
 @socketio.on("Estado_Cortinas_Cuarto")
 def LeerSensoresCuarto(idcuarto,IDscortinas):
     idcuarto=idcuarto[0]
-    if int(idcuarto) not in LecturaDeSensores.keys():
-        proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
-        proceso.start()
+    if int(idcuarto) not in LecturaDeSensores.keys() or KillearHilo[int(idcuarto)]==1:
+        newkill={int(idcuarto):0}
+        KillearHilo.update(newkill)
+        print ("los kill son : ",KillearHilo)
+        proceso= socketio.start_background_task(leerSensoresCortina, idcuarto,OpCortina().buscarCortinasPorCuarto(int(idcuarto))) 
+        
         newprocess={int(idcuarto):proceso}
+        
         LecturaDeSensores.update(newprocess)
         print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
-    else:
-        print ("nega")
+
+        
+
+def leerSensoresCortina(idCuarto,cortinas):
+    #nuevo proceso es este 
+    while KillearHilo[int(idCuarto)]==0:
+        print ("leendo : " ,cortinas["IdCortina"])
+        for x in cortinas["IdCortina"]:
+            EstadoSen1='false'
+            EstadoSen2='false'
+            cortActual=OpCortina().buscarIdCortina(x)
+            sen1=cortActual["PinSensor1"]
+            sen2=cortActual["PinSensor1"]
+            eventlet.sleep(1)
+            OpCortina().modidificarEstadoCortina(x,'Semi')
+            socketio.emit('CortinaCambio', (int(x),'Semi'))
+            eventlet.sleep(1)
+            print ("soketeo el 1")
+            OpCortina().modidificarEstadoCortina(x,'Abierto')
+            socketio.emit('CortinaCambio', (int(x),'Abierto'))
+            eventlet.sleep(1)
+            OpCortina().modidificarEstadoCortina(x,'Cerrado')
+            socketio.emit('CortinaCambio', (int(x),'Cerrado'))
     
 @socketio.on("Stop_Lec")
 def DejarDeLeerSens(idcuarto):
     print ("entraste id cuarto es" ,idcuarto)
     idcuarto=int(idcuarto)
     if idcuarto in LecturaDeSensores.keys():
-        LecturaDeSensores[idcuarto].terminate()
+        # LecturaDeSensores[idcuarto].stop()
         del LecturaDeSensores[idcuarto]
-        print ("levturas :",LecturaDeSensores)
+        # print ("levturas :",LecturaDeSensores)
+        newkill={idcuarto:1}
+        KillearHilo.update(newkill)
     else:
         print ("keys :",LecturaDeSensores.keys())
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################

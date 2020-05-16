@@ -23,6 +23,8 @@ import time
 import subprocess
 import array
 from eventlet import tpool
+import eventlet
+eventlet.monkey_patch()
 from Dispositivos import Raspberry
 from Base import Cortina,Cuarto,Interruptor
 #### si utilizas la rasp es Operacionees sino es el otro OperacionesWind
@@ -37,7 +39,8 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 cont=1
 #la lectura de sensores es clave id de cuarto leyendose ,y valor proceso en funcion
-LecturaDeSensores={}        
+LecturaDeSensores={} 
+KillearHilo={}       
 global DirFondos
 # UPLOAD_FOLDER ='Images/Fondos'
 # UPLOAD_FOLDER= "C:\Users\gabri\Documents\Domotica Empezamos !\Prueba para tio raspberrry\Images\Fondos"
@@ -1045,7 +1048,7 @@ def ReinicioFlaskDisp():
 
 def leerSensoresCortina(idCuarto,cortinas):
     #nuevo proceso es este 
-    while True:
+    while KillearHilo[int(idCuarto)]==0::
         
         print ("leendo :V")
         for x in cortinas["IdCortina"]:
@@ -1066,36 +1069,40 @@ def leerSensoresCortina(idCuarto,cortinas):
                 print ("Esp")
             if EstadoSen1 != 'false' and EstadoSen2 != 'false':
                 if EstadoSen1 == 0 and  EstadoSen2 == 0:
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Semi')
+                    OpCortina().modidificarEstadoCortina(X,'Semi')
                     socketio.emit('CortinaCambio', (int(x),'Semi'))
                 if EstadoSen1 == 1 and EstadoSen2 == 0 :
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
+                    OpCortina().modidificarEstadoCortina(X,'Abierto')
                     socketio.emit('CortinaCambio', (int(x),'Abierto'))
                 if EstadoSen1 == 0 and EstadoSen2 == 1 :
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
+                    OpCortina().modidificarEstadoCortina(X,'Abierto')
                     socketio.emit('CortinaCambio', (int(x),'Abierto'))
 
 ####par aq func el multiproces
 @socketio.on("Estado_Cortinas_Cuarto")
 def LeerSensoresCuarto(idcuarto,IDscortinas):
     idcuarto=idcuarto[0]
-    if int(idcuarto) not in LecturaDeSensores.keys():
-        proceso= multiprocessing.Process(target=leerSensoresCortina,args=(idcuarto,OpCortina().buscarCortinasPorCuarto(idcuarto))) 
-        proceso.start()
+    if int(idcuarto) not in LecturaDeSensores.keys() or KillearHilo[int(idcuarto)]==1:
+        newkill={int(idcuarto):0}
+        KillearHilo.update(newkill)
+        print ("los kill son : ",KillearHilo)
+        proceso= socketio.start_background_task(leerSensoresCortina, idcuarto,OpCortina().buscarCortinasPorCuarto(int(idcuarto))) 
+        
         newprocess={int(idcuarto):proceso}
+        
         LecturaDeSensores.update(newprocess)
         print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
-    else:
-        print ("nega")
     
 @socketio.on("Stop_Lec")
 def DejarDeLeerSens(idcuarto):
     print ("entraste id cuarto es" ,idcuarto)
     idcuarto=int(idcuarto)
     if idcuarto in LecturaDeSensores.keys():
-        LecturaDeSensores[idcuarto].terminate()
+        # LecturaDeSensores[idcuarto].stop()
         del LecturaDeSensores[idcuarto]
-        print ("levturas :",LecturaDeSensores)
+        # print ("levturas :",LecturaDeSensores)
+        newkill={idcuarto:1}
+        KillearHilo.update(newkill)
     else:
         print ("keys :",LecturaDeSensores.keys())
 ######################################################SON WEBADAS CHOCO ESTO ES PARA EL PRIMER INTENTO DE PROYECTO >v #######################################################################################
