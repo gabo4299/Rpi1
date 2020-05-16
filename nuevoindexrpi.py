@@ -916,7 +916,13 @@ def mandarIR(id,NameCommand):
         if IsRegister(cont["IdDisp"],cont["Dispositivo"]):
             if cont["Codigos"][NameCommand]:
                 if cont["Dispositivo"] == "Rasp":
-                    RegistroRaspberry[cont["IdDisp"]].MandarCodigoIR(cont["Pin"], NameCommand,cont["Marca"])
+                    if cont["Marca"] != '' and cont["Marca"] != ' ':
+                        MarcaControl=cont["Marca"]
+                    else:
+                        MarcaControl ="controlGen"
+                        NameCommand=str(id)+NameCommand
+                    #print ()
+                    print (RegistroRaspberry[cont["IdDisp"]].MandarCodigoIR(cont["Pin"], NameCommand,MarcaControl))
                     return ("Si existe") 
             else :
                 return ("No se registro Codigo")
@@ -925,7 +931,28 @@ def mandarIR(id,NameCommand):
 @app.route('/API/ControlIR/<string:id>/LecIR/<string:LecIR>/<string:Name>')
 def RegistrarCodigo(id,LecIR,Name):
     # byte =leerIR(int(LecIR))
-    return OpControl().AddCodigo(int(id),Name,"byte")
+    lector =OpLecIR().BuscarLector(int(LecIR))
+    if lector != 0:
+        Control=OpControl().BuscarControl(int (id))
+        if  Control["Marca"]!= '' and Control["Marca"] != ' ' :
+            MarcaControl=Control["Marca"]
+            newmame=Name
+        else:
+            MarcaControl="controlGen"
+            newmame=str(id)+Name
+        if lector["Dispositivo"] == "Rasp":
+            byte=RegistroRaspberry[lector["IdDisp"]].LeerCodigo(lector["Pin"],Name,MarcaControl)
+            
+            RegistroRaspberry[lector["IdDisp"]].AddCodigo(MarcaControl,newmame,byte)
+            return OpControl().AddCodigo(int(id),Name,byte)
+        if lector["Dispositivo"] == "Esp32":
+            print ("Esp32 falta")
+            return ("falta")
+        if lector["Dispositivo"] == "Node":
+            print ("Node falta")
+            return ("falta")
+    else:
+        return ("Error de lector")
 
 
 ######webas?#######3

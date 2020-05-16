@@ -6,6 +6,7 @@ falta el lector de control y solucionar  las marcas
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
 En raspberry no funciona el dimmer
+estas usando los sensores alrevess!!!!!!!!!!!11 revisa Dispositivos.py para cambiar y en la logica igual del indexrpi.py  line 1119  #######por ahoras
 ## Luces Cortinas Control IR
 los controles IR y Lectores no sse pueden utiliazar en IoT
 

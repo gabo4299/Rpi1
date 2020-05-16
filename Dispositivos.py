@@ -284,46 +284,64 @@ class Raspberry:
         print ("Hola :V ") 
     def BorrarCodigo(self ,Marca,Codigo):
         try:
+            Marca='Lector/'+Marca
             with open(Marca) as file:
                 Cods = json.load(file) 
             if Cods[Codigo]:
                 del Cods[Codigo]
                 with open(Marca, 'w') as file:
                     json.dump(Cods, file)
+                return ("Complete")
             else:
                 return("error de codigo")
         except:
             return ("error de Marca")
         
     def AddCodigo(self ,Marca,Codigo,raw):
+        '''mejor si verificas si el resultado es Complete , entonces si agrego
+        proque tiens q estar seguro q existe la marca,
+        Nota esto es solo para cuando agregas de otro lado cuadno lees de otro lado '''
         try:
-            with open(Marca) as file:
-                Cods = json.load(file) 
-            if not Cods[Codigo]:
+            Marca='Lector/'+Marca
+            
+            with open(Marca,'r') as file:
+                Cods = json.load(file)
+            if Codigo not in Cods.keys():
                 d={Codigo:raw}
                 Cods.update(d)
-                with open(Marca, 'w') as file:
-                    json.dump(Cods, file)
+                #with open(Marca, 'w') as file:
+                    #json.dump(Cods, file)
+                f = open(Marca, "w")
+                f.write(json.dumps(Cods).replace("],", "],\n")+"\n")
+                f.close()
+                    
+                return ("Complete")
             else:
                 return("error de codigo existe")
         except:
             return ("error de Marca")
     def BorrarArchivoCodigo(self ,Marca):
         try:
+            Marca='Lector/'+Marca
             os.remove(Marca)
+            return ("Complete")
         except:
             return ("error de Marca")
     def AddListaCompleta(self ,Marca,CodigosDict):
         try:
+            Marca='Lector/'+Marca
             with open(Marca, 'w') as file:
                     json.dump(CodigosDict, file)
+            return('Complete')
         except:
             return ("error")
 
 
     def LeerCodigo(self,PIN2,Nombre,Marca):
         '''Una lecturaa a la vez  Nombre es el Nombre de Codigo y Marca es el nombre dl Archivo Donde se guardara 
-        ej SAMSUNG'''
+        ej SAMSUNG , si el control no tiene marca se creara un arcihvo por el id + los codigos y se llamara controlGen 
+        es decir si el control id 0 no tiene Marca aparecera un archivo controlGen y este tendra los codigos de todos los genricos las claves
+        de los codigos seran el id + el noimbre , ejemplo apagar id control 0 -->= '0apagar' , cuando veas que no tien marca entonces para mandar codigo mandas la marca controlGen '''
         
         RutaJson="Lector/EstadoControl.json"
         PIN2=int(PIN2)
@@ -365,7 +383,6 @@ class Raspberry:
         StringPin= "-g"+str(Pin)
         rutaIR="Lector/irrp_IoT_Rasp.py"
         Archivo="-f"+Marca
-        print ("Debuuuuuuuuuug entro aqui al IR con Pin: ",Pin," Codigo : ",Codigo," Marca: ",Marca)
         MandIR= subprocess.Popen(['python', rutaIR,'-p',StringPin, Archivo,Codigo])
          
 
@@ -376,10 +393,10 @@ class NodeMCU:
         '''Init el Node Con el id y el estado generalmente Desactivado Para Mandar MQTTT y htpp para activarlo'''
         print ("loco no ")
 
-
-#
 #UNO=Raspberry(1,[13,19,26,14,15,18,23,24,25,8,7,1,12],16,16,False)
-#
+
+
+
 #UNO.AccionLuz(True,"Apagar",0)
 #UNO.AddGpio({21:"PWM"})
 #UNO.AccionMotor(False,21,"Parar")
