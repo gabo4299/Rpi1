@@ -220,8 +220,8 @@ class Raspberry:
             if self.CantidadSen != 0:
                 if self.CantidadSen == 32 :
                     
-                    if Pin <= (self.CantidadSen/2):
-                        
+                    if Pin < (self.CantidadSen/2):
+                       #print ("usando pin: ",Pin)
                        #print (self.IoTfunc.LeerSensor1(Pin) )
                        return (self.IoTfunc.LeerSensor1(Pin) )
                     else : 

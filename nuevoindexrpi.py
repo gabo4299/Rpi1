@@ -1047,33 +1047,54 @@ def leerSensoresCortina(idCuarto,cortinas):
     #nuevo proceso es este 
     while True:
         
-        print ("leendo :V")
+        
         for x in cortinas["IdCortina"]:
             EstadoSen1='false'
             EstadoSen2='false'
+            
             cortActual=OpCortina().buscarIdCortina(x)
             sen1=cortActual["PinSensor1"]
-            sen2=cortActual["PinSensor1"]
+            sen2=cortActual["PinSensor2"]
+            EstadoCortina=cortActual["Estado"]
             if cortActual["Dispositivo"] == "Rasp":
                 EstadoSen1=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(False,sen1)
                 EstadoSen2=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(False,sen2)
             if cortActual["Dispositivo"] == "IoT":
+                
                 EstadoSen1=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(True,sen1)
                 EstadoSen2=RegistroRaspberry[cortActual["IdDisp"]].LeerSensor(True,sen2)
+                
             if cortActual["Dispositivo"] == "Node":
                 print ("node")
             if cortActual["Dispositivo"] == "Esp32":
                 print ("Esp")
+            #######por ahoras
+            if EstadoSen1 == 0:
+                EstadoSen1=1
+            else :
+                EstadoSen1=0
+            if EstadoSen2 == 0:
+                EstadoSen2=1
+            else :
+                EstadoSen2=0
+            ######
             if EstadoSen1 != 'false' and EstadoSen2 != 'false':
                 if EstadoSen1 == 0 and  EstadoSen2 == 0:
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Semi')
-                    socketio.emit('CortinaCambio', (int(x),'Semi'))
+                    if EstadoCortina != 'Semi':
+                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
+                        OpCortina().modidificarEstadoCortina(x,'Semi')
+                        socketio.emit('CortinaCambio', (int(x),'Semi'))
                 if EstadoSen1 == 1 and EstadoSen2 == 0 :
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
-                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
+                    if EstadoCortina != 'Abierto':
+                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
+                        socketio.emit('CortinaCambio', (int(x),'Abierto'))
+                        OpCortina().modidificarEstadoCortina(x,'Abierto')
                 if EstadoSen1 == 0 and EstadoSen2 == 1 :
-                    OpCortina().modidificarEstadoCortina(IdCortina,'Abierto')
-                    socketio.emit('CortinaCambio', (int(x),'Abierto'))
+                    if EstadoCortina != 'Cerrado':    
+                        print ("socketeas estados  sen1: ",EstadoSen1 , " sen2 : ",EstadoSen1)
+                        socketio.emit('CortinaCambio', (int(x),'Cerrado'))
+                        OpCortina().modidificarEstadoCortina(x,'Cerrado')
+                time.sleep(0.02)
 
 ####par aq func el multiproces
 @socketio.on("Estado_Cortinas_Cuarto")
