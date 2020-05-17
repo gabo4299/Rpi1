@@ -449,6 +449,7 @@ if args.record: # Record.
    f.write(json.dumps(records, sort_keys=True).replace("],", "],\n")+"\n")
    f.close()
    EstadoControl["Guardado"]=True
+   EstadoControl['Mensaje']="Guardado"
    with open(RutaDeJson, 'w') as file:
                         json.dump(EstadoControl, file, indent=4)
 

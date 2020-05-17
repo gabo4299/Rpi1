@@ -15,6 +15,7 @@
 #y con eso tenemos 2 pulsadores sin necesidad de otra placa 
 # aahora para leerlo es la joda  :v  puedes leer el resultado  con puta nose 
 '''
+import json
 import multiprocessing
 from flask import Flask, render_template , request, jsonify
 from flask_socketio import SocketIO , send  , emit
@@ -883,10 +884,26 @@ def mandarIR(id,NameCommand):
         return("Error no existe Control")
 @app.route('/API/ControlIR/<string:id>/LecIR/<string:LecIR>/<string:Name>')
 def RegistrarCodigo(id,LecIR,Name):
+    #empiezas a leer codigo y un while true 
     # byte =leerIR(int(LecIR))
+    #empiezs un subproceso
+    # el socketemit'LecturaControlIR'
+    socketio.start_background_task(LecturaControlIR)
     return OpControl().AddCodigo(int(id),Name,"byte")
 
 
+def LecturaControlIR():
+    guardar=False
+    
+    while (guardar == False):
+        with open('Lector/EstadoControl.json', 'r') as file:
+            Cods = json.load(file)
+        socketio.emit('LecturaControlIR',Cods)
+        
+        if Cods["Guardado"]==True:
+            guardar=True
+        eventlet.sleep(0.02)
+                
 ######webas?#######3
 @app.route('/API/Node/<string:ID>')
 def compNode(ID):
@@ -913,14 +930,14 @@ KillearHilo={}
 def LeerSensoresCuarto(idcuarto,IDscortinas):
     idcuarto=idcuarto[0]
     if int(idcuarto) not in LecturaDeSensores.keys() or KillearHilo[int(idcuarto)]==1:
-        newkill={int(idcuarto):0}
-        KillearHilo.update(newkill)
+        #newkill={int(idcuarto):0}
+        #KillearHilo.update(newkill)
         print ("los kill son : ",KillearHilo)
-        proceso= socketio.start_background_task(leerSensoresCortina, idcuarto,OpCortina().buscarCortinasPorCuarto(int(idcuarto))) 
+        #proceso= socketio.start_background_task(leerSensoresCortina, idcuarto,OpCortina().buscarCortinasPorCuarto(int(idcuarto))) 
         
-        newprocess={int(idcuarto):proceso}
+        #newprocess={int(idcuarto):proceso}
         
-        LecturaDeSensores.update(newprocess)
+        #LecturaDeSensores.update(newprocess)
         print("el id del cuarto activo es: ", idcuarto," y las cortians son : ",IDscortinas)
 
         
