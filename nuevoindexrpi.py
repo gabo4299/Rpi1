@@ -21,6 +21,7 @@ import multiprocessing
 import threading 
 import time   
 import subprocess
+import json
 import array
 from eventlet import tpool
 import eventlet
@@ -895,6 +896,21 @@ def ModControl(id):
 @app.route('/API/ControlIR/<string:id>/delCode/<string:NameCommand>' )
 def DeleteCodigoControl(id,NameCommand):
     e=OpControl().BorrarCodigo(int(id),str(NameCommand))
+    if (e != "No existe Codigo" and e != "No existe Control con este ID"):
+        ControlEnCuestion=OpControl().BuscarControl(int(id))
+        if ControlEnCuestion["Dispositivo"]== 'Rasp':
+            if ControlEnCuestion["Marca"] == ' ' or ControlEnCuestion == '':
+                MarcsNew='controlGen'
+                NameCommand=str(id)+NameCommand
+            else:
+                MarcsNew=ControlEnCuestion["Marca"]
+            if RegistroRaspberry[ControlEnCuestion["IdDisp"]].BorrarCodigo(MarcsNew,NameCommand) != 'Complete':
+                return ("Error")
+        if ControlEnCuestion["Dispositivo"]== 'Node':            
+            return ("Falta Node")
+        if ControlEnCuestion["Dispositivo"]== 'Esp32':            
+            return ("Falta Esp32")
+    print( e)
     return jsonify(e)
 
 @app.route('/API/ControlIR/<string:id>/delAllCodes',methods=["PUT"] )
@@ -941,10 +957,17 @@ def RegistrarCodigo(id,LecIR,Name):
             MarcaControl="controlGen"
             newmame=str(id)+Name
         if lector["Dispositivo"] == "Rasp":
+            socketio.start_background_task(LecturaControlIR)
             byte=RegistroRaspberry[lector["IdDisp"]].LeerCodigo(lector["Pin"],Name,MarcaControl)
-            
-            RegistroRaspberry[lector["IdDisp"]].AddCodigo(MarcaControl,newmame,byte)
-            return OpControl().AddCodigo(int(id),Name,byte)
+            if byte != 'Ocupado' and byte != 'Error Revise el Archivo Dispositivos.py':
+                RegistroRaspberry[lector["IdDisp"]].AddCodigo(MarcaControl,newmame,byte)
+                return OpControl().AddCodigo(int(id),Name,byte)
+            else:
+                if byte == 'Ocupado':
+                    mesEstado='Ocupado'
+                else :
+                    mesEstado='Error Revise el Archivo Dispositivos.py'
+                socketio.emit('LecturaControlIR',({"Mensaje":"No se Guardo el codigo","Estado":mesEstado}))
         if lector["Dispositivo"] == "Esp32":
             print ("Esp32 falta")
             return ("falta")
@@ -954,7 +977,17 @@ def RegistrarCodigo(id,LecIR,Name):
     else:
         return ("Error de lector")
 
-
+def LecturaControlIR():
+    guardar=False
+    
+    while (guardar == False):
+        with open('Lector/EstadoControl.json', 'r') as file:
+            Cods = json.load(file)
+        socketio.emit('LecturaControlIR',Cods)
+        
+        if Cods["Guardado"]==True:
+            guardar=True
+        eventlet.sleep(0.02)
 ######webas?#######3
 @app.route('/API/Node/<string:ID>')
 def compNode(ID):

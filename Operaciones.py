@@ -2188,11 +2188,13 @@ class OpControl:
         '''Borras el codigo del control y marca si no es de sistema , el codigo se refiere a nombre del codigo es decir ej OFF'''
         db = cliente[NombreBase]
         coleccion=db[self.CollectionName] 
-        M=OpControl().BuscarControl(IdControl)
         IdControl=int(IdControl)
+        M=OpControl().BuscarControl(IdControl)
+        
         marc=OpMarcaControl().BuscarMarcaNombre(M["Marca"])
         if  M!= 0:
             New=M["Codigos"]
+            
             if Codigo in New:
                 del New[str(Codigo)]
                 

@@ -370,7 +370,7 @@ class Raspberry:
                 if CodigosNew[Nombre]:
                     return CodigosNew[Nombre]
                 else:
-                    return "Error Revise el Archivo Dispositivos .py"
+                    return "Error Revise el Archivo Dispositivos.py"
             else:
                 return Mesage_Control 
                 
@@ -384,6 +384,7 @@ class Raspberry:
         rutaIR="Lector/irrp_IoT_Rasp.py"
         Archivo="-f"+Marca
         MandIR= subprocess.Popen(['python', rutaIR,'-p',StringPin, Archivo,Codigo])
+        return ('Mandando: ')
          
 
 
