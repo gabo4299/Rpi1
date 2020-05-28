@@ -1532,7 +1532,7 @@ class OpInterruptor:
                                 OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
                             if Dispositivo == "Esp32":
                                 OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
-                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,0,NOMBRE)
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,0,NOMBRE,0)
                         else:
                             if Dispositivo == "Rasp":
                                 OpRasp().AddPinOcupadoRasp(IDDISPOSITIVO,PIN,"OUT")
@@ -1542,7 +1542,7 @@ class OpInterruptor:
                                 OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
                             if Dispositivo == "Esp32":
                                 OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
-                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE)
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE,0)
                         
                         
                        
@@ -2641,6 +2641,7 @@ with open('MarcasSis.json') as file:
      MarcSis = json.load(file)
      #print (MarcSis["Samsung"])
 OpMarcaControl().InsertarMarca("Samsung",MarcSis["Samsung"],True)
+
 # print (OpLecIR().InsertarLector(1,1,1,"Rasp",9))
 # OpCasa().insertarCasa(1,"Gabo",124.11)
 # OpRasp().InsertarRasp(1,1,16,16,[1,0,4,5,6,7])
