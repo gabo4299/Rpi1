@@ -1606,6 +1606,16 @@ class OpInterruptor:
             return ("completado")
         else:
             return ("No existe Interruptor")
+    def modidificarEstadoRele(self,idInt,estado):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]   
+        idInt=int(idInt)
+        auxInt=OpInterruptor().buscarIdInterruptor(idInt)
+        if(auxInt!=0):
+            coleccion.update({ "IdInterruptor": idInt}, {"$set":{ 'SalidaRele': estado}})
+            return ("completado")
+        else:
+            return ("No existe Interruptor")
 
     def modInterruptor(self,idInt,Parametro,valor): 
         

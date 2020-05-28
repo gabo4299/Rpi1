@@ -1534,7 +1534,7 @@ class OpInterruptor:
                                 OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
                             if Dispositivo == "Esp32":
                                 OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"Dimmer")
-                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,0,NOMBRE)
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE,0)
                         else:
                             if Dispositivo == "Rasp":
                                 OpRasp().AddPinOcupadoRasp(IDDISPOSITIVO,PIN,"OUT")
@@ -1544,7 +1544,7 @@ class OpInterruptor:
                                 OpNode().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
                             if Dispositivo == "Esp32":
                                 OpEsp32().AddPinOcupadoNode(IDDISPOSITIVO,PIN,"OUT")
-                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE)
+                            inte=Interruptor(IDINTERRUPTOR,IDCUARTO,IDDISPOSITIVO,Dispositivo,PIN,DIMMER,'Apagado',NOMBRE,0)
                         
                         
                        
@@ -1605,6 +1605,16 @@ class OpInterruptor:
         auxInt=OpInterruptor().buscarIdInterruptor(idInt)
         if(auxInt!=0):
             coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ 'Estado': estado}})
+            return ("completado")
+        else:
+            return ("No existe Interruptor")
+    def modidificarEstadoRele(self,idInt,estado):
+        db = cliente[NombreBase]
+        coleccion=db[self.CollectionName]   
+        idInt=int(idInt)
+        auxInt=OpInterruptor().buscarIdInterruptor(idInt)
+        if(auxInt!=0):
+            coleccion.update_one({ "IdInterruptor": idInt}, {"$set":{ 'SalidaRele': estado}})
             return ("completado")
         else:
             return ("No existe Interruptor")

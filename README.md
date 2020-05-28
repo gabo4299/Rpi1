@@ -1,7 +1,7 @@
 ## V2.1
 Version 2 Node ,ESP32,Raspberry ,IoT 
-## 2.1.3
-falta el lector de control y solucionar  las marcas
+## 2.1.4
+La mierdita de cambiar el estado de de la luz pero no asi el aparato
 
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
@@ -17,7 +17,7 @@ http://abyz.me.uk/rpi/pigpio/examples.html#Python_irrp_py
 
 
 ## To work in Raspberry you need to
-dont use the [raspbian-nspawn-64] 
+dont use the [raspbian-nspawn-64]  Never
 enable the ssh
 enable I2C
 sudo pigpiod

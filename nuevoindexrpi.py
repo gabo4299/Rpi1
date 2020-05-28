@@ -339,7 +339,7 @@ def estadoLuz(idcuarto,idluz):
                     ####funcion cambio de luz de idluz a encender
                     socketio.emit('LuzCambio', (int(idluz),"Encendido"))
                     
-                    ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Encender",aux["Pin"])
+                    # ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Encender",aux["Pin"])
                     # tpool.execute(imprimirsi)
                     # imprimirsi()
                     # print ("Encendido luz ",idluz,"gracias")
@@ -351,7 +351,7 @@ def estadoLuz(idcuarto,idluz):
                         # imprimirsi()
                         
                         socketio.emit('LuzCambio', (int(idluz),"Apagado"))
-                        ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
+                        # ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
                         msg ="Apagando luz"  + str(idluz)+"gracias"
                         return (msg)
                     else:
@@ -367,15 +367,49 @@ def estadoLuz(idcuarto,idluz):
             if request.method== "GET":
                 a=OpInterruptor().buscarIdInterruptor(idluz)
                 js=jsonify(a["Estado"])
-                return js
-        
-
-            
-        
+                return js    
     else:
         if aux==0:
             return ('NO EXISTE INTERRUPTOR')
-
+@app.route('/API/Cuarto/<string:idcuarto>/Luz/<string:idluz>/Onlystate/<string:estado>')
+def CambiarSoloEstado(idcuarto,idluz,estado):
+    idluz=int(idluz)
+    print ("entro")
+    aux=OpInterruptor().buscarIdInterruptor(idluz)    
+    if aux!=0:
+        
+        if aux["Dimmer"] == False:
+            if estado == "Apagado" or estado == 0 :
+                OpInterruptor().modidificarEstadoiNT(idluz,'Apagado')
+                socketio.emit('LuzCambio', (int(idluz),"Apagado"))
+                msg ="Estado luz Apagado"  + str(idluz)+"gracias"
+                return (msg)
+            if estado == "Encendido" or estado == 1 :
+                OpInterruptor().modidificarEstadoiNT(idluz,'Encendido')
+                socketio.emit('LuzCambio', (int(idluz),"Encendido"))
+                msg ="Estado  luz Encendido"  + str(idluz)+"gracias"
+                return (msg)
+        else:
+            return ("Es dimmer error")
+    else:
+        return ("no existe")
+@app.route('/API/Cuarto/<string:idcuarto>/Luz/<string:idluz>/Invertrele')
+def InvertirElRele(idcuarto,idluz):
+    idluz=int(idluz)
+    aux=OpInterruptor().buscarIdInterruptor(idluz)    
+    if aux!=0:
+        
+        if aux["Dimmer"] == False:
+            if aux["SalidaRele"] == 0:
+                OpInterruptor().modidificarEstadoRele(idluz,1)
+                ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Encender",aux["Pin"])
+                return ("OK")
+                ####LA HUEVADA PARA CAMBIAR 
+            if aux["SalidaRele"] ==1:
+                OpInterruptor().modidificarEstadoRele(idluz,0)
+                ActuarLuz(aux["IdInterruptor"],aux["Dispositivo"],aux["IdDisp"],"Apagar",aux["Pin"])
+                return ("OK")
+                ####LA HUEVADA PARA CAMBIAR
 @app.route('/API/Cuarto/<string:idcuarto>/Luz/add', methods=['POST'])
 def addI(idcuarto):
     idcuarto=int(idcuarto)

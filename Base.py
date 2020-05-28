@@ -23,7 +23,7 @@ class Cuarto:
                %(self.idcuarto, self.idcasa,self.nombre, self.fondo, self.contrasenha,  self.NDispositivos)
 
 class Interruptor:
-    def __init__(self,IdInterruptor, IdCuarto,IdDisp,Dispositivo, Pin, Dimmer, Estado,Nombre):
+    def __init__(self,IdInterruptor, IdCuarto,IdDisp,Dispositivo, Pin, Dimmer, Estado,Nombre,SalidaRele):
         self.IdInterruptor = IdInterruptor
         self.IdCuarto = IdCuarto
         self.IdDisp = IdDisp
@@ -32,7 +32,7 @@ class Interruptor:
         self.Dimmer = Dimmer
         self.Estado = Estado
         self.Nombre = Nombre
-
+        self.SalidaRele=SalidaRele
 
     def toDBCollection (self):
         return {
@@ -43,15 +43,15 @@ class Interruptor:
             "Dispositivo":self.Dispositivo,
             "Pin":self.Pin,
             "Dimmer": self.Dimmer,
-            
+            "SalidaRele":self.SalidaRele,
             "Estado":self.Estado
             
             
         }
 
     def __str__(self):
-        return "IdInterruptor : %i - IdCuarto: %i - IdDisp: %i- Dispositivo: %s- Pin: %i - Dimmer: %s  - Estado: %s - Nombre: %s" \
-               %(self.IdInterruptor, self.IdCuarto,self.IdDisp,self.Dispositivo, self.Pin, self.Dimmer,  self.Estado, self.Nombre)
+        return "IdInterruptor : %i - IdCuarto: %i - IdDisp: %i- Dispositivo: %s- Pin: %i - Dimmer: %s  - Estado: %s - Nombre: %s -SalidaRele: %i" \
+               %(self.IdInterruptor, self.IdCuarto,self.IdDisp,self.Dispositivo, self.Pin, self.Dimmer,  self.Estado, self.Nombre,self.SalidaRele )
 
 class Cortina:
 
@@ -214,7 +214,7 @@ class Control:
         }
 
     def __str__(self):
-        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i -IdCuarto:%i -Codigos:%s   -Tipo :%s" \
+        return "IdControl : %i -IdDisp : %i - Marca: %s - Dispositivo: %s  - Pin: %i -IdCuarto:%i -Codigos:%s   -Tipo :%s " \
                %(self.Idontrol, self.IdDisp, self.Marca, self.Dispositivo, self.Pin ,self.IdCuarto,self.Codigos,self.Tipo )
 
 class LecIR:
