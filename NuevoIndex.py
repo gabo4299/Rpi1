@@ -946,13 +946,21 @@ def LecturaControlIR():
 ######webas?#######3
 @app.route('/API/Node/<string:ID>')
 def compNode(ID):
-
+    #Primero Buscar el id siempre con la estructura 
+    #   {
+    #       Existe:bool,
+    #       CantOut:Int,
+    #       CantIn:Int,
+    #       In:codesIn,
+    #       OUTcodesOut,
+    #       Pines:array en el orden directo numero,
+    #   } 
     # search(ID)
     if int (ID)==1:
-        return ("Si")
+        #return ("Si")
     #     mes = {"message":"yes"}
     # return(jsonify(mes))
-    # return(jsonify("{message:'yes'}"))
+        return(jsonify("{message:'yes'}"))
     return ("No")
 
 @app.route('/API/Node/<string:ID>/mqtt')
