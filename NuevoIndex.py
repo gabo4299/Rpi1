@@ -1032,6 +1032,15 @@ def RegNode():
 
 KillearHilo={}
 ####par aq func el multiproces
+@app.route('/API/Potencia',methods=['POST'])
+def potecia():
+    
+    val=request.json["n"]
+    
+
+    return ("ok")
+
+
 @socketio.on("Estado_Cortinas_Cuarto")
 def LeerSensoresCuarto(idcuarto,IDscortinas):
     idcuarto=idcuarto[0]
