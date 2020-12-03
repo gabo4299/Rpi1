@@ -74,6 +74,16 @@ socketio.init_app(app, cors_allowed_origins="*")
 #falta en (app,async mode='threading") 
 #nota sin el async mode no se puede parar el programa con cntrol c , pero si es en tiempo real !
 
+@app.route('/API/Potencia',methods=['POST'])
+def potecia():
+    
+    val=request.json["n"]
+    val=100-val
+    
+    
+
+    return ("ok")
+
 
 @app.route('/')
 @cross_origin()

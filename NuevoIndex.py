@@ -1036,6 +1036,8 @@ KillearHilo={}
 def potecia():
     
     val=request.json["n"]
+    val=100-val
+    
     
 
     return ("ok")
