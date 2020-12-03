@@ -24,6 +24,8 @@ import time
 import subprocess
 import array
 from eventlet import tpool
+from flask_mqtt import Mqtt
+
 import eventlet
 eventlet.monkey_patch()
 from Base import Cortina,Cuarto,Interruptor
@@ -38,6 +40,14 @@ from flask import send_file
 from werkzeug.utils import secure_filename
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
+# para mqtt 
+app.config['MQTT_BROKER_URL'] = '127.0.0.1'
+app.config['MQTT_BROKER_PORT'] = 1883   
+app.config['MQTT_REFRESH_TIME'] = 1.0  # refresh time in seconds
+
+mqtt = Mqtt(app)
+mqtt.subscribe('node/giveme')
+
 cont=1
 
 global DirFondos
@@ -68,11 +78,52 @@ socketio.init_app(app, cors_allowed_origins="*")
 
 #falta en (app,async mode='threading") 
 #nota sin el async mode no se puede parar el programa con cntrol c , pero si es en tiempo real !
+# suscribimos a el canal del node 
+
+
+@mqtt.on_message()
+def handle_mqtt_message(client, userdata, message):
+    data = dict(
+        topic=message.topic,
+        payload=message.payload.decode()
+    )
+
+    # print( data["topic"])
+    if data["topic"] == "node/giveme":
+        
+        # print (data["payload"])
+        MESAGEMQTT= (data["payload"])
+        MESAGEMQTT = str(MESAGEMQTT)
+        MESAGEMQTT = json.loads(MESAGEMQTT)
+        # print ( mes2car["id"])
+        if MESAGEMQTT["id"] >0: # osea si esque es el id 
+            idNode = int(MESAGEMQTT["id"])
+            if OpNode().buscarNode(idNode): #buscar id 
+                print ("existe")
+                link1= "node/"+str(idNode)+"/setIN" 
+                link1= "node/"+str(idNode)+"/setIN" 
+                link1= "node/"+str(idNode)+"/setIN" 
+                link1= "node/"+str(idNode)+"/setIN" 
+#si existe entonces mandarle los pines de salida de entrada y de tv 
+                # empeazar a madar los pines  OUT IN OUX 
+            else:
+                print ("no existe")
+            
+            print (MESAGEMQTT["id"])
+
+        
+
+
+
+        
+    # funcioana
+    # if data[topic] == "node/giveme":
+    #     print ("me estas giveando")
+
 
 @app.route('/')
 @cross_origin()
 def home():
-    
     return render_template('home2.html')
 encendiendo='1'
 
@@ -946,21 +997,29 @@ def LecturaControlIR():
 ######webas?#######3
 @app.route('/API/Node/<string:ID>')
 def compNode(ID):
-    #Primero Buscar el id siempre con la estructura 
-    #   {
-    #       Existe:bool,
-    #       CantOut:Int,
-    #       CantIn:Int,
-    #       In:codesIn,
-    #       OUTcodesOut,
-    #       Pines:array en el orden directo numero,
-    #   } 
-    # search(ID)
-    if int (ID)==1:
-        #return ("Si")
-    #     mes = {"message":"yes"}
-    # return(jsonify(mes))
-        return(jsonify("{message:'yes'}"))
+
+    if OpNode().buscarNode(ID)==True:
+        n=OpNode().MostrarNodeEsp(int (ID))
+        if n["Estado"] !="Activado":
+            OpNode().CambiarEstado(ID)
+        Libres=(OpNode().DevolverPinsOcupados(ID))
+        print (Libres)
+        for k,v in  (Libres.items()) :
+            print ("Enviando : ",k ," Pin: ",v)
+            data={
+                "Pin":int (k),
+                "Mode":v
+            }
+            data=json.dumps(data)
+            
+            link="node/"+str(ID)+"/SET"
+            mqtt.publish(link, data)
+
+        #Tambien lo activas
+        # print (len(OpNode().DevolverPinsLibres(ID)))
+        return ("Si")
+        # aQUI PUBLICAS N veces los pines 
+        # armar estructura facha 
     return ("No")
 
 @app.route('/API/Node/<string:ID>/mqtt')

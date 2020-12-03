@@ -810,7 +810,7 @@ class OpNode:
         else:
             
             
-            cua=Node(IdNode,IdCasa,["D0","D1","D2","D3","D4","D5","D6","D7","D8"],{},9,0,"A0","",1,"Desactivado",Descripcion)
+            cua=Node(IdNode,IdCasa,[0,2,4,5,12,13,14,15,16],{},9,0,"A0","",1,"Desactivado",Descripcion)
             
             
             coleccion.insert(cua.toDBCollection())
@@ -944,17 +944,17 @@ class OpNode:
                 
             else:
                 pin2 = pin
-                pin="D"+str(pin)
+                pin=int(pin)
                 if pin in OpNode().DevolverPinsLibres(id) or pin2 in OpNode().DevolverPinsLibres(id) :
                     S=OpNode().MostrarNodeEsp(id)
                     val=OpNode().DevolverPinsOcupados(id)
                     newpines=OpNode().DevolverPinsLibres(id)
                     if pin in OpNode().DevolverPinsLibres(id):
                         newpines.remove(pin)
-                        val.update({str(pin):modo})
+                        val.update({modo:str(pin)})
                     else:
                         newpines.remove(pin2)
-                        val.update({str(pin2):modo})
+                        val.update({modo:str(pin2)})
                     OpNode().ModNode(id,"PinesLibres",newpines)
                     OpNode().ModNode(id,"PinesOcupados",val)
                     OpNode().ModNode(id,"Cantidad Pines Libres",len(newpines))
@@ -980,9 +980,9 @@ class OpNode:
         
                 PiOc=OpNode().DevolverPinsOcupados(id)
                 PiLib=OpNode().DevolverPinsLibres(id)
-                if ("D"+str(pin)) in PiOc:
-                        del PiOc["D"+str(pin)]
-                        PiLib.append(("D"+str(pin)))
+                if (int(pin)) in PiOc:
+                        del PiOc[int(pin)]
+                        PiLib.append((int(pin)))
                         OpNode().ModNode(id,"PinesLibres",PiLib)
                         OpNode().ModNode(id,"PinesOcupados",PiOc)
                         OpNode().ModNode(id,"Cantidad Pines Libres",len(PiLib))
@@ -995,7 +995,7 @@ class OpNode:
         id = int  ( id)
         if OpNode().buscarNode(id):
             pin2=pin
-            pin="D"+str(pin)
+            pin=int(pin)
             
             if pin in OpNode().DevolverPinsLibres(id) or pin2 in OpNode().DevolverPinsLibres(id):
                 return True

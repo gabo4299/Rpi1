@@ -3,6 +3,9 @@ Version 2 Node ,ESP32,Raspberry ,IoT
 ## 2.1.4
 La mierdita de cambiar el estado de de la luz pero no asi el aparato
 Funcionando 28 MAYO 2020
+# V2.2 Configurando para el node 
+se agregara una nueva libreria
+
 
 ## Importante 
 tienes que verificar en el front end el ipfunc.json , y en el index la variable link archivos
