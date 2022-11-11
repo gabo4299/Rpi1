@@ -1032,15 +1032,18 @@ def RegNode():
 
 KillearHilo={}
 ####par aq func el multiproces
-@app.route('/API/Potencia',methods=['POST'])
-def potecia():
+# import serial
+# arduino = serial.Serial('COM3', 9600)
+# @app.route('/API/Potencia/<string:poten>')
+# def potecia(poten):
+#     if not arduino.isOpen():
+#         arduino.open()
+#     val=int (poten)
+#     val=100-val
+#     arduino.write(val+10)
     
-    val=request.json["n"]
-    val=100-val
     
-    
-
-    return ("ok")
+#     return ("ok")
 
 
 @socketio.on("Estado_Cortinas_Cuarto")
